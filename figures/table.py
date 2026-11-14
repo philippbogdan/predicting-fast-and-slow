@@ -23,11 +23,11 @@ import summary as S  # noqa: E402
 
 TRACE = "msr.mds_0.orig"
 SIZES = list(range(9, 17))            # 512 B to 64 KiB
-LOADS = list(range(0, 9))             # nothing outstanding to 512 KiB and more
+LOADS = list(range(0, 9))             # less than 4 KiB outstanding to 512 KiB and more
 SIZE_LABEL = {9: "512 B", 10: "1 KiB", 11: "2 KiB", 12: "4 KiB", 13: "8 KiB", 14: "16 KiB", 15: "32 KiB", 16: "64 KiB"}
 LOAD_LABEL = ["0", "", "8K", "", "32K", "", "128K", "", "512K"]
 MIN_READS = 20
-CALM = (12, 0, 0)                     # 4 KiB, nothing outstanding, drive answering
+CALM = (12, 0, 0)                     # 4 to 8 KiB, less than 4 KiB outstanding, drive answering
 STORM = (16, 7, 1)                    # 64 KiB, 256 KiB or more outstanding, after a quiet gap
 X0, X1, Y0, W, H = 0.468, 0.728, 0.2, 0.235, 0.66       # the two heat maps, in figure coordinates
 
@@ -102,7 +102,7 @@ def draw():
     calm, storm = cells[CALM], cells[STORM]
     say(0.945, "A read is submitted: look up its cell", fontweight="bold", fontsize=8.5)
     tag(0.84, "a")
-    say(0.84, "4 KiB, nothing outstanding", x=0.115)
+    say(0.84, "4 KiB, less than 4 KiB outstanding", x=0.115)
     ax.text(0.99, 0.735, f"q = {calm['q']:.2f}", fontsize=9, va="center", ha="right", color=t["outcome"],
             fontweight="bold")
     say(0.77, f"{100 * calm['slow'] / calm['reads']:.0f}% of these came back slow.", x=0.115)

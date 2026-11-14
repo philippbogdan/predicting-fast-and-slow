@@ -40,7 +40,7 @@
 \vspace{16pt}
 \begin{minipage}{0.86\textwidth}
 \textbf{Heimdall, a learned controller, calls slow on \CallsSlow\% of an SSD's reads when \ReadsSlow\% are slow. Uncertainty estimators, the remedy prescribed for its wrong guesses, cannot find them: nine of them do no better than a coin. The drive can.}
-On one trace, \CalmSlow\% of the 4\,KiB reads that found nothing outstanding on the drive came back slow, and Heimdall called \CalmCalledSlow\% of them slow. A 4,096-entry table of how the drive's recent reads came back, untrained and \TableNs\ns{} a decision, ranks the wrong guesses at a median AUROC of \TableMed{} on \HeldTraces{} held-out traces, where the nine sit at \EstMedLo{} to \EstMedHi, and it predicts slow reads better than Heimdall itself.
+On one trace, \CalmSlow\% of the reads of 4 to 8\,KiB that found less than 4\,KiB outstanding on the drive came back slow, and Heimdall called \CalmCalledSlow\% of them slow. A 4,096-entry table of how the drive's recent reads came back, untrained and \TableNs\ns{} a decision, ranks the wrong guesses at a median AUROC of \TableMed{} on \HeldTraces{} held-out traces, where the nine sit at \EstMedLo{} to \EstMedHi, and it predicts slow reads better than Heimdall itself.
 \end{minipage}\par
 \vspace{14pt}
 \includegraphics[width=\textwidth]{figures/heldout.pdf}\par

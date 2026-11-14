@@ -27,7 +27,7 @@ Heimdall is not unsure. It is tilted. Each thin line is one held-out trace, thro
   <img src="figures/table-light.svg" width="100%" alt="Two grids of squares, request size from 512 B up to 64 KiB against the bytes already outstanding on the drive, one while the drive is answering and one after a quiet gap, each square shaded towards red by its entry q, from 0 to 1. The large reads behind a backlog are the reddest, more so after a quiet gap. Square a, 4 KiB with less than 4 KiB outstanding, is barely shaded, and square b, 64 KiB behind 256 KiB after a quiet gap, is deep red. Left, the table's two operations: a read is submitted, look up its cell, and a read completes, update its cell.">
 </picture>
 
-One number per situation: how often reads submitted like this one have lately come back slow. Each square is one situation after one held-out trace, redder the more often its reads came back slow. Of the reads of 4 to 8 KiB that found less than 4 KiB outstanding (a), 2% came back slow, and Heimdall called 96% of them slow.
+One number per situation: how often reads submitted like this one have lately come back slow. Each square is one situation after one held-out trace, redder the more often its reads came back slow. Of the reads of 4 to 8 KiB that found less than 4 KiB outstanding while the drive was answering (a), 2% came back slow, and Heimdall called 96% of them slow.
 
 ```python
 # a read is submitted

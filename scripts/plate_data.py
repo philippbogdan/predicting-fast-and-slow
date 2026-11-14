@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""What the plates of METHOD.md draw and their captions quote, beyond results/summary.json.
+"""What the figures of METHOD.md draw and their captions quote, beyond results/summary.json.
 
 Standard library only, like summary.py, which it reads through. figures/plates/ draws the plates from these
 functions, typeset.py sets macros() into METHOD.md beside the summary's own numbers (not into
@@ -13,9 +13,9 @@ the captions say in words.
   bias()   Fig. 3. Each held-out trace's share of scored reads that came back slow, that Heimdall called slow
            and that its period labels mark slow (results/classwise/heldout), summed over the later windows
            as summary.classwise_block sums them.
-  table()  Fig. 4. The learnt table of one held-out replay (results/heldout/table, from scripts/table_state.py).
 
-Fig. 2 is drawn without data, and Fig. 5's values are those of figures/tail.py.
+Fig. 2 is drawn without data. Fig. 4 is the paper's Figure 2 (figures/table.py), which leaves a cell with fewer
+than MIN_READS reads blank, and Fig. 5's values are those of figures/tail.py.
 """
 import ast
 import functools
@@ -31,8 +31,7 @@ import summary as S  # noqa: E402
 
 SIGNALS = ("table", "euclid")      # Fig. 1: the drive's own table, and Euclidean distance
 TENTHS = 10
-TABLE_TRACE = "msr.mds_0.orig"     # Fig. 4
-MIN_READS = 20                     # Fig. 4 leaves a cell with fewer reads blank
+MIN_READS = 20                     # Fig. 4 (figures/table.py) leaves a cell with fewer reads blank
 WORDS = ["none", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"]
 _NPY = {"<f4": "f", "<f8": "d", "<i8": "q"}
 
@@ -99,21 +98,13 @@ def bias():
     return out
 
 
-@functools.lru_cache(maxsize=None)
-def table():
-    """The stored table of TABLE_TRACE, and its cells for reads with nothing outstanding for longer than T
-    (age class 0), by (size class, load class, quiet bit)."""
-    d = S.load(S.RES / "heldout" / "table" / f"{TABLE_TRACE}.json")
-    return d, {(c["size_class"], c["load_class"], c["quiet"]): c for c in d["cells"] if c["age_class"] == 0}
-
-
 def medians(rows):
     return [st.median(col) for col in zip(*rows)]
 
 
 def macros(s):
     """The plates' captions' numbers that the paper does not quote, by the names METHOD.in.md uses."""
-    c, b, (d, _) = claim(), bias(), table()
+    c, b = claim(), bias()
     tm, em = medians(c["table"]), medians(c["euclid"])
     return {
         # Fig. 1: points above or below each trace's own average, the median over traces
@@ -125,8 +116,8 @@ def macros(s):
         "BiasAbove": sum(t["calls"] > t["slow"] for t in b.values()),
         "BiasGapReads": f"{100 * st.median(t['calls'] - t['slow'] for t in b.values()):.0f}",
         "BiasGapLabels": f"{100 * st.median(abs(t['calls'] - t['labels']) for t in b.values()):.0f}",
-        # Fig. 4: the knee of the replay's first minute, and what the plate leaves blank
-        "TableKneeUs": f"{d['T_us']:.0f}", "TableMinReads": MIN_READS,
+        # Fig. 4: what the figure leaves blank
+        "TableMinReads": MIN_READS,
         # Fig. 5: the artefact's pairs
         "TailPairs": WORDS[len(S.ARTEFACT_PAIRS)],
     }

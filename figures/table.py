@@ -5,6 +5,11 @@ Left: the table's two operations, on two of its cells.  Right: its entries at th
 msr.mds_0.orig (results/heldout/table), for reads submitted with no request older than T outstanding:
 the slow-read frequency q by request size and bytes already outstanding, while the drive is answering
 and after it has completed nothing for 16 T.  Every number on the figure is read from that file.
+
+Drawn for the paper into paper/figures/table.pdf, and light and dark for the pages into figures/table-light.svg
+and figures/table-dark.svg (tests/test_plates.py redraws both).  A cell with fewer than plate_data.MIN_READS
+reads is left blank, the number METHOD.md's caption quotes.
+Usage: table.py [paper] [light] [dark]   (all three by default)
 """
 import sys
 from pathlib import Path
@@ -20,20 +25,20 @@ sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "figures"))
 import style  # noqa: E402
 import summary as S  # noqa: E402
+from plate_data import MIN_READS  # noqa: E402
 
 TRACE = "msr.mds_0.orig"
 SIZES = list(range(9, 17))            # 512 B to 64 KiB
 LOADS = list(range(0, 9))             # less than 4 KiB outstanding to 512 KiB and more
 SIZE_LABEL = {9: "512 B", 10: "1 KiB", 11: "2 KiB", 12: "4 KiB", 13: "8 KiB", 14: "16 KiB", 15: "32 KiB", 16: "64 KiB"}
 LOAD_LABEL = ["0", "", "8K", "", "32K", "", "128K", "", "512K"]
-MIN_READS = 20
 CALM = (12, 0, 0)                     # 4 to 8 KiB, less than 4 KiB outstanding, drive answering
 STORM = (16, 7, 1)                    # 64 KiB, 256 KiB or more outstanding, after a quiet gap
 X0, X1, Y0, W, H = 0.468, 0.728, 0.2, 0.235, 0.66       # the two heat maps, in figure coordinates
 
 
-def draw():
-    t = style.use()
+def figure(theme="paper"):
+    t = style.use(theme)
     d = S.load(S.RES / "heldout" / "table" / f"{TRACE}.json")
     cells = {(c["size_class"], c["load_class"], c["quiet"]): c for c in d["cells"] if c["age_class"] == 0}
     cmap = LinearSegmentedColormap.from_list("q", [t["bg"], t["outcome"]])
@@ -117,9 +122,15 @@ def draw():
     say(0.305, "A read completes: update its cell", fontweight="bold", fontsize=8.5)
     say(0.205, "Slower than T: 1/64 of the way to 1.")
     say(0.135, "Faster: 1/64 of the way to 0.")
-    style.save(fig, "table")
+    return fig
+
+
+def draw(theme="paper"):
+    fig = figure(theme)
+    style.save(fig, "table", theme)
     plt.close(fig)
 
 
 if __name__ == "__main__":
-    draw()
+    for theme in sys.argv[1:] or ("paper", "light", "dark"):
+        draw(theme)

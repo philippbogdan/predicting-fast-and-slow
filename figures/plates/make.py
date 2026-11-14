@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
-"""The plates of METHOD.md, drawn from results/ into this folder, light and dark.
+"""The ink plates of METHOD.md, drawn from results/ into this folder, light and dark. Its Fig. 4 is the paper's
+Figure 2, drawn by figures/table.py.
 
     python figures/plates/make.py            draws them
     python figures/plates/make.py --check    draws them in memory and fails if a committed file differs
 
 Needs numpy and matplotlib (which brings fontTools), and the two faces in fonts/. plate.py is the drawing
 style, plate_<name>.py draws <name>-light.svg and <name>-dark.svg, and every number a plate shows comes from
-scripts/plate_data.py or scripts/summary.py. tests/test_plates.py redraws every file and compares bytes.
+scripts/plate_data.py or scripts/summary.py. tests/test_plates.py redraws every file, and figures/table.py's
+two, and compares bytes.
 """
 import argparse
 import os
@@ -20,7 +22,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(HERE))
 import plate  # noqa: E402
 
-ORDER = ("claim", "protocol", "bias", "table", "tail")       # Figs. 1 to 5
+ORDER = ("claim", "protocol", "bias", "tail")       # Figs. 1, 2, 3 and 5 (Fig. 4 is the paper's, figures/table.py)
 PX = 2.4                                                     # pixels to the point on the screen
 
 

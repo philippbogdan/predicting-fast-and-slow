@@ -23,11 +23,11 @@ Heimdall is not unsure. It is tilted. Each thin line is one held-out trace, thro
 ## The table
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="figures/plates/table-dark.svg">
-  <img src="figures/plates/table-light.svg" width="1192" alt="Right, two grids of cells, request size from 512 B up to 64 KiB and bytes already outstanding on the drive from 0 across to 512K, one lettered drive answering and one after a quiet gap. Each cell is hatched up to its entry: low for small reads with little outstanding, high for large reads behind a backlog, and higher after a quiet gap. Two cells are outlined in red: a, 4 KiB with less than 4 KiB outstanding, and b, 64 KiB behind 256 KiB after a quiet gap. Left, in words: a read is submitted, look up its cell, with what cells a and b hold, and a read completes, update its cell, with one cell drawn large whose level q moves 1/64 of the way to 1 when the read was slower than T and 1/64 of the way to 0 when it was faster.">
+  <source media="(prefers-color-scheme: dark)" srcset="figures/table-dark.svg">
+  <img src="figures/table-light.svg" width="100%" alt="Two grids of squares, request size from 512 B up to 64 KiB against the bytes already outstanding on the drive, one while the drive is answering and one after a quiet gap, each square shaded towards red by its entry q, from 0 to 1. The large reads behind a backlog are the reddest, more so after a quiet gap. Square a, 4 KiB with less than 4 KiB outstanding, is barely shaded, and square b, 64 KiB behind 256 KiB after a quiet gap, is deep red. Left, the table's two operations: a read is submitted, look up its cell, and a read completes, update its cell.">
 </picture>
 
-One number per situation: how often reads submitted like this one have lately come back slow. Hatched, each cell's number after one held-out trace. Red, two of them: of the reads of 4 to 8 KiB that found less than 4 KiB outstanding, 2% came back slow, and Heimdall called 96% of them slow.
+One number per situation: how often reads submitted like this one have lately come back slow. Each square is one situation after one held-out trace, redder the more often its reads came back slow. Of the reads of 4 to 8 KiB that found less than 4 KiB outstanding (a), 2% came back slow, and Heimdall called 96% of them slow.
 
 ```python
 # a read is submitted

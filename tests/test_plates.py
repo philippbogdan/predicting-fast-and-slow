@@ -1,4 +1,4 @@
-"""The plates of METHOD.md are what their scripts draw from results/, byte for byte, and check.py fails when a
+"""The figures of METHOD.md are what their scripts draw from results/, byte for byte, and check.py fails when a
 number in their captions is not what the result files say."""
 import importlib.util
 import sys
@@ -21,9 +21,22 @@ def make():
 
 def test_every_plate_redraws_byte_for_byte():
     files = make().drawn()
-    assert len(files) == 10
+    assert len(files) == 8
     for name, text in files.items():
         assert (PLATES / name).read_bytes() == text.encode(), f"figures/plates/{name} is not what its script draws"
+
+
+def test_the_table_figure_redraws_byte_for_byte():
+    """Fig. 4 is the paper's Figure 2, figures/table.py's light and dark versions."""
+    sys.path.insert(0, str(ROOT / "figures"))
+    import matplotlib.pyplot as plt
+    import style
+    import table
+    for theme in ("light", "dark"):
+        fig = table.figure(theme)
+        text = style.svg(fig)
+        plt.close(fig)
+        assert (ROOT / "figures" / f"table-{theme}.svg").read_bytes() == text.encode(), f"figures/table-{theme}.svg"
 
 
 def test_the_claim_is_read_as_numpy_reads_it():
@@ -45,8 +58,8 @@ def test_check_fails_on_a_changed_caption_number(tmp_path):
     root = copy(tmp_path)
     page = root / "METHOD.md"
     text = page.read_text()
-    assert "the median stays within 6 points of the average" in text
-    page.write_text(text.replace("the median stays within 6 points", "the median stays within 5 points"))
+    assert "it stays within 6 points of the average" in text
+    page.write_text(text.replace("it stays within 6 points", "it stays within 5 points"))
     done = run(root)
     assert done.returncode == 1
     assert "METHOD.md" in done.stdout

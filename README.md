@@ -11,7 +11,23 @@ Above, every read of 57 held-out traces, one row a trace, red where Heimdall gue
 
 **[The paper](paper/main.pdf)** is three pages. This repository is its supplement: the code, every result file, and one script that recomputes every number.
 
+## Why doubt cannot find them
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="figures/plates/bias-dark.svg">
+  <img src="figures/plates/bias-light.svg" width="570" alt="One thin line for each of the 57 held-out traces through three columns, the share of its scored reads that came back slow, that Heimdall called slow and that its labels marked slow, on an axis from 0 to 100%. A heavy red line joins the medians, lettered 30%, 52% and 53%: it rises from the first column to the second and stays nearly level to the third.">
+</picture>
+
+Heimdall is not unsure. It is tilted. Each thin line is one held-out trace, through how often its reads came back slow, how often Heimdall called slow, and how often its training labels marked slow. Red, the medians: 30%, 52% and 53%. The calls follow the labels, not the reads, and an estimator that asks how unfamiliar an input is cannot see that.
+
 ## The table
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="figures/plates/table-dark.svg">
+  <img src="figures/plates/table-light.svg" width="1192" alt="Right, two grids of cells, request size from 512 B up to 64 KiB and bytes already outstanding on the drive from 0 across to 512K, one lettered drive answering and one after a quiet gap. Each cell is hatched up to its entry: low for small reads with little outstanding, high for large reads behind a backlog, and higher after a quiet gap. Two cells are outlined in red: a, 4 KiB with less than 4 KiB outstanding, and b, 64 KiB behind 256 KiB after a quiet gap. Left, in words: a read is submitted, look up its cell, with what cells a and b hold, and a read completes, update its cell, with one cell drawn large whose level q moves 1/64 of the way to 1 when the read was slower than T and 1/64 of the way to 0 when it was faster.">
+</picture>
+
+One number per situation: how often reads submitted like this one have lately come back slow. Hatched, each cell's number after one held-out trace. Red, two of them: of the reads of 4 to 8 KiB that found less than 4 KiB outstanding, 2% came back slow, and Heimdall called 96% of them slow.
 
 ```python
 # a read is submitted
@@ -23,6 +39,17 @@ table[cell] += ((latency > T) - table[cell]) / 64
 ```
 
 T is the knee of the first minute's read latencies, so the table needs no training and no label but each read's own latency. A fast guess is suspect in proportion to q, a slow guess to 1 - q. The reference implementation, used unchanged for every result, is the 143 lines of [admission/tracker.py](admission/tracker.py).
+
+## The tail cannot referee
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="figures/plates/tail-dark.svg">
+  <img src="figures/plates/tail-light.svg" width="570" alt="One line for each of the six trace pairs across four columns, Euclidean distance, Mahalanobis distance, the table in red, and the oracle, at the pair's p99.9 read latency in ms on a logarithmic axis. Every line is nearly flat: one pair well above the rest, one in the middle, and the others close together near the bottom.">
+</picture>
+
+The evidence offered for the estimators was tail latency. On two identical NVMe drives, with hedging on, it does not matter who picks the reads to distrust. Each line is one trace pair, and at the median round the better distance ends within 9% of the table (red) on every pair. An oracle told which guesses were wrong gains at most 13%.
+
+How each number was made, and what the paper has no room for: [METHOD.md](METHOD.md).
 
 ## Check every number
 

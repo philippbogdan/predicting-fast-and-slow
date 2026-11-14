@@ -1,0 +1,49 @@
+{
+ "source": {
+  "title": "When Machine Learning Isn't Sure: Building Resilient ML-Based Computer Systems by Embracing Uncertainty",
+  "authors": "Gohil, Stojkovic, Bashir, Dev, Upasani, Lo, Ranganathan and Delimitrou",
+  "venue": "Proceedings of Machine Learning and Systems 8 (MLSys 2026)",
+  "url": "https://proceedings.mlsys.org/paper_files/paper/2026/hash/96aca14d6c4dcd3adf54bc2c5ad7f138-Abstract-Conference.html",
+  "pdf_sha256": "bb76c8730076279d189193c548780a4a08229447966dfc33a335f863f68daeee"
+ },
+ "transcribed": {
+  "note": "Values stated in the text of Sections 4.3.2, 4.3.3 and 5.3. Reported by the study on its own testbed; not measured here.",
+  "testbed": "two Samsung 970 PRO 1 TB SSDs",
+  "guideline": "If the task has a strict, microsecond-level latency constraint, a distance-based estimator must be selected, as it is the only viable option.",
+  "task_description": "binary latency classification (fast/slow) for each I/O",
+  "bayesian_network_inference_us": 238,
+  "conformal_1000_samples_us": 500,
+  "conformal_100_samples_uncertain_percent": 99.84,
+  "distance_estimator_us": 7,
+  "distance_threshold": "90th percentile of the training distances",
+  "fallback": "a flagged request is dispatched to both SSDs simultaneously; the redundant request is cancelled on the first response",
+  "p999_cut_over_heimdall_percent": {
+   "euclidean": 56,
+   "mahalanobis": 57
+  },
+  "mean_cut_over_heimdall_percent": {
+   "euclidean": 12,
+   "mahalanobis": 18
+  },
+  "flagged_percent": {
+   "euclidean": 5.22,
+   "mahalanobis": 17.25
+  }
+ },
+ "read_from_figure_10": {
+  "note": "ESTIMATES. Our reading of the right-hand plot of Figure 10 (read latency against percentile), to about 0.05 ms, from the published PDF rendered at 400 dpi. The study states no values for hedging. As a check on the reading, 1 - 1.00/2.33 = 57%, the cut the study states for its gates.",
+  "p999_ms": {
+   "static": 2.9,
+   "heimdall": 2.33,
+   "hedging": 1.35,
+   "heimdall_plus_euclidean": 1.0,
+   "heimdall_plus_mahalanobis": 1.0
+  },
+  "p9999_ms": {
+   "heimdall": 4.0,
+   "hedging": 1.79,
+   "heimdall_plus_euclidean": 1.79,
+   "heimdall_plus_mahalanobis": 1.69
+  }
+ }
+}

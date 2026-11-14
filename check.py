@@ -4,13 +4,15 @@
   1. results/SHA256SUMS      No result file has changed since the numbers were computed.
   2. scripts/summary.py      Recomputes every quoted number from the per-window files in results/
                              and must reproduce results/summary.json.
-  3. scripts/typeset.py      paper/numbers.tex, README.md and METHOD.md are that summary, formatted.
+  3. scripts/typeset.py      paper/numbers.tex, README.md and METHOD.md are that summary, formatted, and the
+                             pages carry the numbers of METHOD.md's plates as scripts/plate_data.py
+                             recomputes them from results/.
      scripts/tables.py       results/tables.md is the tables of results/.
   4. results/heldout/frozen.sha256
                              admission/ is byte for byte the pipeline that was frozen before the
                              held-out traces were replayed.
-  5. The statements the paper and the pages make in words (all six pairs, all twelve traces, level with, ...)
-     hold in the recomputed numbers.
+  5. The statements the paper, the pages and the plates' captions make in words (all six pairs, all twelve
+     traces, level with, ...) hold in the recomputed numbers.
 
 Prints what it found and exits 0 only if all five hold.  Standard library only.
 `check.py --seal` rewrites results/SHA256SUMS, results/summary.json, paper/numbers.tex, README.md, METHOD.md
@@ -178,8 +180,9 @@ def seal():
     (ROOT / "results" / "summary.json").write_text(json.dumps(s, indent=1) + "\n")
     m = typeset.macros(json.loads(json.dumps(s)))
     typeset.TEX.write_text(typeset.tex(m))
+    pm = typeset.page_macros(json.loads(json.dumps(s)))
     for path in (typeset.README, typeset.METHOD):
-        path.write_text(typeset.page(path, m))
+        path.write_text(typeset.page(path, pm))
     TABLES.write_text(module("tables").page())
     SUMS.write_text(sums_text())
     print(f"sealed: {len(result_files())} result files, {len(m)} quoted numbers")
@@ -210,11 +213,12 @@ def check():
 
     # 3. the paper's numbers and the two pages are that summary, formatted
     typeset = module("typeset")
-    m = typeset.macros(fresh)
-    for path, text in ((typeset.TEX, typeset.tex(m)), (typeset.README, typeset.page(typeset.README, m)),
-                       (typeset.METHOD, typeset.page(typeset.METHOD, m))):
+    m, pm = typeset.macros(fresh), typeset.page_macros(fresh)
+    for path, text, n in ((typeset.TEX, typeset.tex(m), len(m)),
+                          (typeset.README, typeset.page(typeset.README, pm), len(pm)),
+                          (typeset.METHOD, typeset.page(typeset.METHOD, pm), len(pm))):
         report(path.exists() and path.read_text() == text,
-               f"{path.relative_to(ROOT)} carries the {len(m)} quoted numbers as computed")
+               f"{path.relative_to(ROOT)} carries the {n} quoted numbers as computed")
 
     tables = module("tables")
     report(TABLES.exists() and TABLES.read_text() == tables.page(), "results/tables.md is the tables of results/")
@@ -225,7 +229,7 @@ def check():
     report(not bad, "admission/ is the pipeline frozen before the held-out replays", bad)
 
     # 5. what the paper and the pages say in words rather than numbers
-    for said, holds in statements(fresh):
+    for said, holds in statements(fresh) + module("plate_data").statements(fresh):
         report(holds, "in words: " + said)
 
     h, c, d = fresh["heldout"], fresh["classwise"]["heldout"], fresh["direct"]["heldout"]["every_read"]

@@ -48,4 +48,19 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
+The plates of [METHOD.md](METHOD.md) are lettered in XCharter, the paper's face: version 1.221 of [XCharter](https://ctan.org/pkg/xcharter) by Michael Sharpe, an extension of Bitstream Charter, in [figures/plates/fonts](figures/plates/fonts). Its fonts are free fonts under the same terms as Bitstream Charter, with portions Copyright (c) 2009 to 2012 Andrey V. Panov and 2013 to 2020 Michael Sharpe, and [the licence](figures/plates/fonts/LICENSE) is beside them:
+
+```
+(c) Copyright 1989-1992, Bitstream Inc., Cambridge, MA.
+
+You are hereby granted permission under all Bitstream propriety rights
+to use, copy, modify, sublicense, sell, and redistribute the 4
+Bitstream Charter (r) Type 1 outline fonts for any purpose and without
+restriction; provided, that this notice is left intact on all copies
+of such fonts and that Bitstream's trademark is acknowledged as shown
+below on all unmodified copies of the 4 Charter Type 1 fonts.
+
+  BITSTREAM CHARTER is a registered trademark of Bitstream Inc.
+```
+
 The values in [results/study_reported.json](results/study_reported.json) are quoted from Gohil et al., MLSys 2026, for comparison.

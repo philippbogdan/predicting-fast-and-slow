@@ -2,11 +2,32 @@
 
 How each number in the paper was made, what the paper has no room for, and how to run it on your own traces. [check.py](check.py) recomputes every number on this page, and [results/tables.md](results/tables.md) lists every trace and every drive run. An AUROC is the median over traces of the worst of four later windows, and a guess is wrong by the read's own latency, unless period labels are named.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="figures/plates/claim-dark.svg">
+  <img src="figures/plates/claim-light.svg" width="570" alt="Two panels, one above the other, each with one thin line for each of the 57 held-out traces across the tenths of its reads, from most suspect on the left to least suspect on the right, in points above or below the trace's own average, and a heavy red line through their medians. Above, ordered by the drive's own table, the lines and the red median fall from well above the average to well below it. Below, ordered by distance from the training data, they stay close to the average.">
+</picture>
+
+**Fig. 1.** The reads of the two minutes after training on each of the 57 held-out traces, in order from the guess a signal finds most suspect to the one it finds least, cut into tenths. Above, the drive's own table. Below, Euclidean distance from the training data, as Gohil et al. prescribe. A tenth's height is the share of its guesses that were wrong, less the share over the whole trace, in percentage points. Thin: one trace, its tenths joined, the ink building up where traces run together. Red: the median of the 57. Dotted: each trace's own average. Under the table the median falls from 29 points above it to 24 below, and the most suspect tenth is wrong more often than the least on all 57 traces. Under distance the median stays within 6 points of the average, and the most suspect tenth is wrong more often than the least on 35.
+
 ## Protocol
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="figures/plates/protocol-dark.svg">
+  <img src="figures/plates/protocol-light.svg" width="570" alt="A time axis from 0 to 180 seconds into a replay, with a dash-dot line at 60 seconds through four lanes. Heimdall's network and the nine estimators: a hatched bar over the first minute, lettered fitted, then a dashed line, lettered frozen. T, the knee of these read latencies: a bracket over the first minute, then a dotted line, lettered fixed. The table, every entry from 1/2: a heavy red arrow across all three minutes, lettered learns from every completion. Every later read scored, the worst window counts: the first minute lettered not scored, then four stippled windows of 30 seconds.">
+</picture>
+
+**Fig. 2.** The protocol, on the three minutes of one replay, drawn without data. Hatched: the first minute, on which Heimdall's pipeline trains its network on its period labels and the nine estimators are fitted. Dashed: both frozen from then on. Dotted: $T$, the knee of the first minute's read latencies. Stippled: the four 30-second windows in which every later read is scored. A guess is wrong when its read comes back on the other side of the knee of the whole replay's read latencies, a score's AUROC in a window is how well it ranks wrong guesses above right ones, and a trace's score is its worst window. Red, heavy: the table, whose 4,096 entries start at 1/2 and move at every completion, from the first read to the last.
 
 **Windows.** A replay lasts 180 s. Its first 60 s train everything: the network, every estimator, the thresholds, the timeout. Every read of the remaining 120 s is scored, in four windows of 30 s.
 
 **Heimdall.** A 12-128-16-1 network. Its inputs are the read's size, the client's queue length on the drive, and the queue length, latency and throughput of the last three I/Os that completed there. [admission/heimdall.py](admission/heimdall.py) reimplements the artefact's period labelling, noise filtering, features and training recipe, and reproduces its labels and features row for row ([results/development/pipeline](results/development/pipeline)). The artefact orders I/Os with an unstable sort, which NumPy runs differently on processors with AVX-512, so the module carries a port of NumPy's generic sort. At decision time the network is fed what the artefact's replayer feeds it: the last three I/Os that completed, not the last three submitted. Held out it is wrong on 7 to 86% of later reads by each read's own latency, and on 7 to 60% by its own period labels.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="figures/plates/bias-dark.svg">
+  <img src="figures/plates/bias-light.svg" width="570" alt="One thin line for each of the 57 held-out traces through three columns, the share of its scored reads that came back slow, that Heimdall called slow and that its labels marked slow, on an axis from 0 to 100%. A heavy red line joins the medians, lettered 30%, 52% and 53%: it rises from the first column to the second and stays nearly level to the third.">
+</picture>
+
+**Fig. 3.** Heimdall's calls follow what it was taught, not what the reads did. Each thin line is one of the 57 held-out traces, through three shares of its scored reads (those of the last two minutes): the share that came back slow, the share Heimdall called slow, and the share its period labels marked slow. Red: the medians, 30%, 52% and 53%. Heimdall calls slow more often than reads come back slow on 44 traces, a median 19 points above them, and within a median 7 points of its labels.
 
 **The score.** A read is slow when its latency exceeds the knee of the replay's read-latency distribution, found by the tangent method of LinnOS and Heimdall, and a guess is wrong when it disagrees. Each estimator, and the table, gives every guess a number, higher for more suspect. Its score on a trace is the AUROC with which it ranks wrong guesses above right ones, in the worst of the four later windows. A window with one class only is left out. The best of nine is picked per trace after the fact, which favours the estimators. Heimdall's period labels are scored beside each read's latency everywhere.
 
@@ -38,6 +59,13 @@ All see the same twelve inputs as the network, normalised as the network normali
 
 ## The table
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="figures/plates/table-dark.svg">
+  <img src="figures/plates/table-light.svg" width="1192" alt="Right, two grids of cells, request size from 512 B up to 64 KiB and bytes already outstanding on the drive from 0 across to 512K, one lettered drive answering and one after a quiet gap. Each cell is hatched up to its entry: low for small reads with little outstanding, high for large reads behind a backlog, and higher after a quiet gap. Two cells are outlined in red: a, 4 KiB with less than 4 KiB outstanding, and b, 64 KiB behind 256 KiB after a quiet gap. Left, in words: a read is submitted, look up its cell, with what cells a and b hold, and a read completes, update its cell, with one cell drawn large whose level q moves 1/64 of the way to 1 when the read was slower than T and 1/64 of the way to 0 when it was faster.">
+</picture>
+
+**Fig. 4.** The table after the three minutes of one held-out trace, an MSR Cambridge media-server volume, for reads submitted with nothing outstanding for longer than $T$, the knee of the first minute's read latencies (177 µs). A cell is a class of request size and one of bytes outstanding, each a power of two wide and named by its lower edge, while the drive is answering and once it has completed nothing for $16T$. Hatched: the cell's entry $q$, from 0 at its floor to 1 at its top, the line its level. Blank: fewer than 20 reads. Red: the two cells the text works through, a (4 KiB, less than 4 KiB outstanding) and b (64 KiB behind 256 KiB, after a quiet gap). Left: the table's two operations, on one cell drawn large.
+
 [admission/tracker.py](admission/tracker.py), 143 lines, used unchanged for every result.
 
 - A cell is (size class, load class, age class, quiet bit): floor(log2(bytes)) capped at 31, the bit length of the bytes outstanding on the drive divided by 4,096, capped at 15, the age of the oldest outstanding request in units of T, capped at 3, and 1 if the drive has completed something but nothing in the last 16 T.
@@ -66,6 +94,13 @@ It was shaped on the artefact's twelve device traces and the five further replay
 
 ## The tail
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="figures/plates/tail-dark.svg">
+  <img src="figures/plates/tail-light.svg" width="570" alt="One line for each of the six trace pairs across four columns, Euclidean distance, Mahalanobis distance, the table in red, and the oracle, at the pair's p99.9 read latency in ms on a logarithmic axis. Every line is nearly flat: one pair well above the rest, one in the middle, and the others close together near the bottom.">
+</picture>
+
+**Fig. 5.** Whoever picks the reads to distrust, the tail lands in the same place. The six trace pairs of Heimdall's artefact on two identical enterprise NVMe drives, with hedging on. Each line is one pair, through its p99.9 read latency, the median over five rounds, when the guesses to distrust are picked by Euclidean distance, by Mahalanobis distance, by the table, or by an oracle (in each round the best of five policies told which guesses were wrong in an earlier replay). Red: the table. At the median round the better distance ends within 9% of the table on every pair, and the oracle gains at most 13% on the best of the three.
+
 **Policies.** Heimdall alone, Heimdall with a distance (a flagged read goes to both drives) and Heimdall with the table (a read called fast goes to both drives when its entry is at least 1/2, a read called slow stays home when its entry is below 1/2). Each of these with hedging, and hedging alone, with no model. H is the hedging timeout. The first answer is the read's latency, and a drive cannot cancel the losing copy. The oracle is five policies, each with a different action on the wrong guesses and all with hedging: where the paper names one, it is the lowest p99.9 of the five in each round, picked with hindsight.
 
 **Two identical enterprise NVMe drives.** Two Dell Ent NVMe v2 AGN RI U.2 3.84TB, the members of a RAID0 of 512 KiB chunks in a machine with an AMD EPYC 7402P, each client's I/O kept to the chunks of its own member (reading whole chunks of one member's map moved only that member's counters). Nine pairs (P1 to P6 of the artefact, K, S1 and S3) and sixteen policies, in five rounds: each round runs every policy once on every pair, in a fresh random order. Per pair, a training replay with no admission control comes first: Heimdall is retrained on its first third, and the distance thresholds, T, H and the oracle's labels come from it too. Every I/O is issued however late, so every policy is scored on the same reads. A run is quiet when no second of it breaks a fixed criterion on other processes' CPU and on foreign traffic to the two drives ([results/routing/enterprise_nvme.json](results/routing/enterprise_nvme.json) holds the thresholds and every kept run). A run that breaks it only through other users' jobs on other cores, with the two drives untouched, is kept and labelled shared. Any other is rejected and run again, up to four attempts. Each ratio is taken within a round and summarised by its median over rounds.
@@ -93,6 +128,7 @@ It was shaped on the artefact's twelve device traces and the five further replay
 ```sh
 pip install numpy matplotlib
 python figures/heldout.py && python figures/table.py && python figures/tail.py
+python figures/plates/make.py      # this page's plates, into figures/plates/
 cd paper && pdflatex main && pdflatex main
 ```
 

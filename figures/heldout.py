@@ -89,8 +89,8 @@ def panel(ax, t, vals, labels, lo):
     ax.set_xticklabels(["0.2", "0.4", "0.5", "0.6", "0.8", "1.0"], fontsize=8)
 
 
-def draw(theme):
-    t = style.use(theme)
+def draw():
+    t = style.use()
     fig = plt.figure(figsize=(7.0, 3.05))
     a = fig.add_axes([0.232, 0.185, 0.325, 0.72])
     b = fig.add_axes([0.632, 0.185, 0.325, 0.72])
@@ -103,10 +103,9 @@ def draw(theme):
                 color=t["muted"])
     fig.text(0.595, 0.035, "AUROC in the worst of four later windows. Each dot is one held-out trace.", ha="center",
              va="center", fontsize=8.5, color=t["fg"])
-    style.save(fig, "heldout", theme, t)
+    style.save(fig, "heldout")
     plt.close(fig)
 
 
 if __name__ == "__main__":
-    for theme in ("paper", "light", "dark"):
-        draw(theme)
+    draw()

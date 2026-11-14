@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Every number the paper and the README quote, recomputed from the result files.
+"""Every number the paper, README.md and METHOD.md quote, recomputed from the result files.
 
 Reads results/ only (standard library only) and writes results/summary.json.  The paper is typeset
 from it (scripts/typeset.py), the figures are drawn through its functions, and check.py runs
 them again and compares, so no quoted number can drift from the files.
 
 Conventions, used throughout:
-  * a trace's score for a signal is the signal's AUROC in the worst of the four later windows;
-  * "best of nine" is the best of the nine uncertainty estimators on that trace, picked after the fact;
-  * a guess is wrong when the read's own latency class disagrees with it, unless period labels are named.
+  * A trace's score for a signal is the signal's AUROC in the worst of the four later windows.
+  * "Best of nine" is the best of the nine uncertainty estimators on that trace, picked after the fact.
+  * A guess is wrong when the read's own latency class disagrees with it, unless period labels are named.
 """
 import argparse
 import json

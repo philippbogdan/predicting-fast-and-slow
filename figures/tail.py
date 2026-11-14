@@ -51,8 +51,8 @@ def p999_ms():
     return out
 
 
-def draw(theme):
-    t = style.use(theme)
+def draw():
+    t = style.use()
     hue = t["outcome"]
     vals = p999_ms()
     fig, ax = plt.subplots(figsize=(3.3, 2.25))
@@ -80,10 +80,9 @@ def draw(theme):
     ax.tick_params(axis="x", length=0, pad=4)
     ax.set_xlim(-0.35, len(PICKERS) - 0.65)
     ax.spines["bottom"].set_visible(False)
-    style.save(fig, "tail", theme, t)
+    style.save(fig, "tail")
     plt.close(fig)
 
 
 if __name__ == "__main__":
-    for theme in ("paper", "light", "dark"):
-        draw(theme)
+    draw()

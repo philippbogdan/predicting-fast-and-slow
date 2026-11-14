@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 """One command: is every quoted number what the result files say?
 
-  1. results/SHA256SUMS      no result file has changed since the numbers were computed;
-  2. scripts/summary.py      recomputes every quoted number from the per-window files in results/
-                             and must reproduce results/summary.json;
-  3. scripts/typeset.py      paper/numbers.tex, README.md and docs/further.md are that summary, formatted, and
-     scripts/tables.py       docs/results.md is the tables of results/;
+  1. results/SHA256SUMS      No result file has changed since the numbers were computed.
+  2. scripts/summary.py      Recomputes every quoted number from the per-window files in results/
+                             and must reproduce results/summary.json.
+  3. scripts/typeset.py      paper/numbers.tex, README.md and METHOD.md are that summary, formatted.
+     scripts/tables.py       results/tables.md is the tables of results/.
   4. results/heldout/frozen.sha256
                              admission/ is byte for byte the pipeline that was frozen before the
                              held-out traces were replayed.
-  5. the statements the paper and the pages make in words (all six pairs, all twelve traces, level with, ...)
+  5. The statements the paper and the pages make in words (all six pairs, all twelve traces, level with, ...)
      hold in the recomputed numbers.
 
 Prints what it found and exits 0 only if all five hold.  Standard library only.
-`check.py --seal` rewrites results/SHA256SUMS, results/summary.json, paper/numbers.tex, README.md,
-docs/further.md and docs/results.md after results/ has been regenerated (docs/reproduce.md).
+`check.py --seal` rewrites results/SHA256SUMS, results/summary.json, paper/numbers.tex, README.md, METHOD.md
+and results/tables.md after results/ has been regenerated (METHOD.md, "Run it").
 """
 import hashlib
 import importlib.util
@@ -26,6 +26,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 SUMS = ROOT / "results" / "SHA256SUMS"
 FROZEN = ROOT / "results" / "heldout" / "frozen.sha256"
+TABLES = ROOT / "results" / "tables.md"
 
 
 def module(name):
@@ -40,8 +41,10 @@ def sha256(path):
 
 
 def result_files():
+    """Every file of results/ but what is computed from the others (the summary, the checksums) and the pages."""
     skip = {SUMS, ROOT / "results" / "summary.json"}
-    return sorted(p for p in (ROOT / "results").rglob("*") if p.is_file() and p not in skip and p.name != ".DS_Store")
+    return sorted(p for p in (ROOT / "results").rglob("*")
+                  if p.is_file() and p not in skip and p.suffix != ".md" and p.name != ".DS_Store")
 
 
 def sums_text():
@@ -69,7 +72,7 @@ def differences(a, b, path=""):
 
 
 def statements(s):
-    """The claims the paper, the README and docs/further.md make in words, each as a test on the recomputed summary."""
+    """The claims the paper, README.md and METHOD.md make in words, each as a test on the recomputed summary."""
     h, dev, cw = s["heldout"], s["development"]["device_traces"], s["classwise"]
     pooled, art, q = cw["heldout"]["pooled"], s["artefact_replays"], s["quiet_drives"]
     en = s["enterprise_nvme"]
@@ -141,7 +144,7 @@ def statements(s):
          < min(study["transcribed"]["p999_cut_over_heimdall_percent"].values()) / 200),
         ("in Heimdall's own logs hedging has the lower p99.9 on all six pairs and Heimdall the lower mean on all six",
          art["hedging_lower_p999_pairs"] == 6 and art["heimdall_lower_mean_pairs"] == 6),
-        # docs/further.md
+        # the measurements the paper leaves out (METHOD.md)
         ("three of the 60 cuts are left out: two the table's design had seen, one that cannot be scored",
          h["selected"] == 60 and len(h["development_exposed"]) == 2 and len(h["unscored"]) == 1 and h["traces"] == 57),
         ("on the artefact's traces the table leads the best of nine on all twelve, both ways",
@@ -175,9 +178,9 @@ def seal():
     (ROOT / "results" / "summary.json").write_text(json.dumps(s, indent=1) + "\n")
     m = typeset.macros(json.loads(json.dumps(s)))
     typeset.TEX.write_text(typeset.tex(m))
-    typeset.README.write_text(typeset.readme(m))
-    typeset.FURTHER.write_text(typeset.further(m))
-    (ROOT / "docs" / "results.md").write_text(module("tables").page())
+    for path in (typeset.README, typeset.METHOD):
+        path.write_text(typeset.page(path, m))
+    TABLES.write_text(module("tables").page())
     SUMS.write_text(sums_text())
     print(f"sealed: {len(result_files())} result files, {len(m)} quoted numbers")
 
@@ -205,16 +208,16 @@ def check():
     diff = differences(stored, fresh)
     report(not diff, "results/summary.json is what scripts/summary.py computes from results/", diff)
 
-    # 3. the paper's numbers and the README are that summary, formatted
+    # 3. the paper's numbers and the two pages are that summary, formatted
     typeset = module("typeset")
     m = typeset.macros(fresh)
-    for path, text in ((typeset.TEX, typeset.tex(m)), (typeset.README, typeset.readme(m)),
-                       (typeset.FURTHER, typeset.further(m))):
+    for path, text in ((typeset.TEX, typeset.tex(m)), (typeset.README, typeset.page(typeset.README, m)),
+                       (typeset.METHOD, typeset.page(typeset.METHOD, m))):
         report(path.exists() and path.read_text() == text,
                f"{path.relative_to(ROOT)} carries the {len(m)} quoted numbers as computed")
 
     tables = module("tables")
-    report((ROOT / "docs" / "results.md").read_text() == tables.page(), "docs/results.md is the tables of results/")
+    report(TABLES.exists() and TABLES.read_text() == tables.page(), "results/tables.md is the tables of results/")
 
     # 4. the pipeline is the frozen one
     bad = [line.split("  ", 1)[1] for line in FROZEN.read_text().splitlines()

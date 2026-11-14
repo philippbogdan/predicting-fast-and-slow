@@ -1,8 +1,8 @@
 #!/bin/sh
 # Rebuild everything that rests on the identical enterprise drives' runs, from their per-run records:
 #   results/routing/enterprise_nvme.json   (scripts/enterprise_nvme.py)
-#   results/summary.json, results/SHA256SUMS, paper/numbers.tex, README.md, docs/further.md, docs/results.md   (check.py --seal)
-#   figures/tail.pdf and its light and dark SVGs, paper/figures/tail.pdf   (figures/tail.py)
+#   results/summary.json, results/SHA256SUMS, paper/numbers.tex, README.md, METHOD.md, results/tables.md   (check.py --seal)
+#   paper/figures/tail.pdf   (figures/tail.py)
 #   paper/main.pdf   (pdflatex, or tectonic where there is no pdflatex)
 # then runs check.py and the tests.  Stops at the first failure.
 #
@@ -18,7 +18,6 @@ cd "$REPO"
 "$PY" -I scripts/enterprise_nvme.py "$SRC"
 "$PY" -I check.py --seal
 "$PY" -I figures/tail.py
-cp figures/tail.pdf paper/figures/tail.pdf
 
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT

@@ -1,13 +1,13 @@
 # Results
 
-Every number the paper, the README and [docs/further.md](../docs/further.md) quote is computed from these files by [scripts/summary.py](../scripts/summary.py) into [summary.json](summary.json). [docs/results.md](../docs/results.md) shows them as tables and [docs/method.md](../docs/method.md) says how each was made.
+Every number the paper quotes is computed from these files by [scripts/summary.py](../scripts/summary.py) into [summary.json](summary.json). [tables.md](tables.md) shows them as tables, and [METHOD.md](../METHOD.md) says how each was made.
 
 | path | what |
 |---|---|
 | [heldout/traces.json](heldout/traces.json) | the 60 held-out cuts: source, volume, checksums of the cut and of its replay, the replay's quiet record |
 | [heldout/detection/](heldout/detection) | per trace and window, the AUROC of 39 scores for Heimdall's wrong guesses, under both truths (`signals_G2_request`: each read's own latency, `signals`: Heimdall's period labels), with error rates and counts |
 | [heldout/table/](heldout/table) | the table one trace taught: every visited cell's entry, reads, slow reads and Heimdall's calls |
-| [heldout/hero/](heldout/hero) | binned counts behind the two pictures at the top of the README |
+| [heldout/hero/](heldout/hero) | binned counts behind the picture at the top of the README |
 | [heldout/frozen.sha256](heldout/frozen.sha256) | the pipeline as frozen before the held-out traces were replayed |
 | [development/detection/](development/detection) | the same per-window scores for the artefact's twelve device traces and five further replays |
 | [development/pipeline/](development/pipeline) | the reimplemented labelling, features and accuracy against the artefact's own files |
@@ -22,6 +22,6 @@ Every number the paper, the README and [docs/further.md](../docs/further.md) quo
 | [cost/cost.json](cost/cost.json) | nanoseconds a decision |
 | [study_reported.json](study_reported.json) | the values Gohil et al. report, and our reading of their Figure 10, marked as an estimate |
 | [heimdall_reported.json](heimdall_reported.json) | two statements of Heimdall's paper that the text quotes |
-| [SHA256SUMS](SHA256SUMS) | every file above |
+| [SHA256SUMS](SHA256SUMS) | the checksum of every file above |
 
-In the per-window files the table is called `tracker`; `tracker_size_only`, `tracker_no_age`, `tracker_no_quiet` and `tracker_admitted` are its ablations, and `supervised_w0_G2` is a detector fitted on every labelled read of the first minute.
+In the per-window files the table is called `tracker`. `tracker_size_only`, `tracker_no_age`, `tracker_no_quiet` and `tracker_admitted` are its ablations, and `supervised_w0_G2` is a detector fitted on every labelled read of the first minute.

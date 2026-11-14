@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""The data behind the two pictures at the top of the README, for one baseline replay.
+"""The data behind the picture at the top of the README and its second version (figures/hero.py), for one
+baseline replay.
 
 strips  Sort the trace's later reads from most to least suspect under one signal and cut the order
         into 240 equal runs; per run, the share of Heimdall's guesses that were wrong.  A signal that

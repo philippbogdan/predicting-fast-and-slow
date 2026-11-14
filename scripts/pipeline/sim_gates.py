@@ -7,8 +7,8 @@ For each trace pair, both clients run Heimdall's network retrained on W0
   * euclid, mahal: the study's distance gates: distance of the normalised
     input to the training centroid above the 90th percentile of training
     distances -> hedge (both SSDs, first wins)
-  * tracker-mixed+timeout: the tracker's gate with the timeout, line 5 of the
-    table's gate (docs/method.md); tracker-* and feedback-*: other actions and thresholds
+  * tracker-mixed+timeout: the table's gate with the timeout (METHOD.md, "The tail");
+    tracker-* and feedback-*: other actions and thresholds
   * rule-hedge, rule-flip: an earlier decision-time evidence rule
   * oracle-*: distrusts exactly the wrong decisions
 plus baseline (no admission control) and random for context.

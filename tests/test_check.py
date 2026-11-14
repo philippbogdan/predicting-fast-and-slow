@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-NEEDED = ["check.py", "README.md", "admission", "scripts", "results", "docs", "paper/numbers.tex"]
+NEEDED = ["check.py", "README.md", "METHOD.md", "admission", "scripts", "results", "paper/numbers.tex"]
 
 
 def copy(tmp_path):
@@ -41,7 +41,7 @@ def test_fails_on_a_changed_result(tmp_path):
 def test_fails_on_a_changed_quoted_number(tmp_path):
     root = copy(tmp_path)
     readme = root / "README.md"
-    readme.write_text(readme.read_text().replace("50 of the 57", "57 of the 57"))
+    readme.write_text(readme.read_text().replace("AUROC of 0.68", "AUROC of 0.86"))
     done = run(root)
     assert done.returncode == 1
     assert "README.md" in done.stdout

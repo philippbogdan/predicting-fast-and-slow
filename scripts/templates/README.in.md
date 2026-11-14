@@ -1,0 +1,60 @@
+# Predicting, Fast and Slow: SSD Already Knows Which Guess Is Wrong
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="figures/hero-strips-dark.png">
+  <img src="figures/hero-strips-light.png" width="100%" alt="Every read of {{HeldTraces}} held-out traces, one row a trace, red where Heimdall guessed wrong. Ordered by the drive's own table, the wrong guesses gather at the suspect end of each row. Ordered by distance from the training data, they are scattered everywhere.">
+</picture>
+
+**[Heimdall](https://doi.org/10.1145/3689031.3717496), a learned controller, calls slow on {{CallsSlow}}% of an SSD's reads when {{ReadsSlow}}% are slow. Uncertainty estimators, [the remedy prescribed](https://proceedings.mlsys.org/paper_files/paper/2026/hash/96aca14d6c4dcd3adf54bc2c5ad7f138-Abstract-Conference.html) for its wrong guesses, cannot find them: nine of them do no better than a coin. The drive can.**
+
+Above, every read of {{HeldTraces}} held-out traces, one row a trace, red where Heimdall guessed wrong. A 4,096-entry table of how the drive's recent reads came back, untrained and {{TableNs}} ns a decision, puts the wrong guesses first: a median AUROC of {{TableMed}}, where the nine sit at {{EstMedLo}} to {{EstMedHi}}. And it predicts slow reads better than Heimdall itself.
+
+**[The paper](paper/main.pdf)** is three pages. This repository is its supplement: the code, every result file, and one script that recomputes every number.
+
+## The table
+
+```python
+# a read is submitted
+cell = (size_class, outstanding_bytes_class, oldest_age_class, quiet_bit)
+q = table[cell]                                  # how often reads like this one came back slow
+
+# the read completes
+table[cell] += ((latency > T) - table[cell]) / 64
+```
+
+T is the knee of the first minute's read latencies, so the table needs no training and no label but each read's own latency. A fast guess is suspect in proportion to q, a slow guess to 1 - q. The reference implementation, used unchanged for every result, is the {{TableLines}} lines of [admission/tracker.py](admission/tracker.py).
+
+## Check every number
+
+```sh
+python check.py
+```
+
+Python 3.10 or later, nothing to install, a few seconds. It recomputes every number in the paper, and every measurement the paper leaves out, from the per-trace result files in [results/](results/), and fails if one has drifted.
+
+## Your own traces
+
+A per-I/O latency log of four columns is all the pipeline needs: [METHOD.md](METHOD.md#run-it).
+
+## What is where
+
+| where | what |
+|---|---|
+| [METHOD.md](METHOD.md) | how each number was made, and what the paper has no room for |
+| [results/](results/) | the result files, per trace and per drive run, and [all of them as tables](results/tables.md) |
+| [admission/](admission/) | the table, Heimdall's pipeline reimplemented, the nine estimators, the simulator |
+| [scripts/](scripts/) | the analyses that wrote the result files, and [summary.py](scripts/summary.py), which every number comes from |
+| [bench/](bench/) | the replayer, the quiet-machine recorder and the cost benchmark, in C |
+| [paper/](paper/), [figures/](figures/), [tests/](tests/) | the paper's source, the script behind each figure, the table on cases worked by hand |
+
+## Cite
+
+```bibtex
+@misc{bogdan2026predicting,
+  author = {Philipp Bogdan},
+  title  = {Predicting, Fast and Slow: {SSD} Already Knows Which Guess Is Wrong},
+  year   = {2026}
+}
+```
+
+Our code, results, figures and text are released under [CC0 1.0](LICENSE). What belongs to others is in [NOTICE.md](NOTICE.md).

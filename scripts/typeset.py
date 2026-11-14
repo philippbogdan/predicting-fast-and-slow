@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""The numbers the paper, the README and docs/further.md quote, set into all three from results/summary.json.
+"""The numbers the paper, README.md and METHOD.md quote, set into all three from results/summary.json.
 
-Every figure quoted in paper/main.tex is a macro of paper/numbers.tex, and README.md and docs/further.md are
-docs/README.in.md and docs/further.in.md with the same names filled in, so no text can drift from the result
-files: scripts/summary.py recomputes summary.json from results/, this script formats it, and check.py verifies
-them all.
+Every number quoted in paper/main.tex is a macro of paper/numbers.tex, and README.md and METHOD.md are
+scripts/templates/README.in.md and METHOD.in.md with the same names filled in, so no text can drift from the
+result files: scripts/summary.py recomputes summary.json from results/, this script formats it, and check.py
+verifies them all.
 Usage: typeset.py [--check]
 """
 import argparse
@@ -15,8 +15,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-TEX, README, TEMPLATE = ROOT / "paper" / "numbers.tex", ROOT / "README.md", ROOT / "docs" / "README.in.md"
-FURTHER, FURTHER_TEMPLATE = ROOT / "docs" / "further.md", ROOT / "docs" / "further.in.md"
+TEMPLATES = ROOT / "scripts" / "templates"
+TEX, README, METHOD = ROOT / "paper" / "numbers.tex", ROOT / "README.md", ROOT / "METHOD.md"
 WORDS = ["none", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"]
 
 
@@ -224,18 +224,11 @@ def tex(m):
     return "\n".join(lines) + "\n"
 
 
-def filled(template, m):
+def page(path, m):
+    """A page of the repository: its template with every {{Name}} filled in."""
     def fill(match):
         return str(m[match.group(1)])
-    return re.sub(r"\{\{(\w+)\}\}", fill, template.read_text())
-
-
-def readme(m):
-    return filled(TEMPLATE, m)
-
-
-def further(m):
-    return filled(FURTHER_TEMPLATE, m)
+    return re.sub(r"\{\{(\w+)\}\}", fill, (TEMPLATES / f"{path.stem}.in.md").read_text())
 
 
 def main():
@@ -243,7 +236,7 @@ def main():
     ap.add_argument("--check", action="store_true")
     a = ap.parse_args()
     m = macros(json.loads((ROOT / "results" / "summary.json").read_text()))
-    wanted = {TEX: tex(m), README: readme(m), FURTHER: further(m)}
+    wanted = {TEX: tex(m), README: page(README, m), METHOD: page(METHOD, m)}
     if a.check:
         bad = [p.relative_to(ROOT) for p, text in wanted.items() if not p.exists() or p.read_text() != text]
         for p in wanted:
@@ -252,7 +245,7 @@ def main():
         return 1 if bad else 0
     for p, text in wanted.items():
         p.write_text(text)
-    print(f"wrote paper/numbers.tex, README.md and docs/further.md from {len(m)} numbers")
+    print(f"wrote paper/numbers.tex, README.md and METHOD.md from {len(m)} numbers")
     return 0
 
 

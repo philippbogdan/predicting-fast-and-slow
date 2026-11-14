@@ -2,44 +2,16 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="figures/hero-strips-dark.png">
-  <img src="figures/hero-strips-light.png" width="100%" alt="Every read of 57 held-out traces, one row a trace, lit where Heimdall guessed wrong. Ordered by the drive's own table, the wrong guesses gather at the suspect end of each row. Ordered by distance from the training data, they are scattered everywhere.">
+  <img src="figures/hero-strips-light.png" width="100%" alt="Every read of 57 held-out traces, one row a trace, red where Heimdall guessed wrong. Ordered by the drive's own table, the wrong guesses gather at the suspect end of each row. Ordered by distance from the training data, they are scattered everywhere.">
 </picture>
 
-**Heimdall, a learned controller, calls slow on 52% of an SSD's reads when 30% are slow. Uncertainty estimators, the remedy prescribed for its wrong guesses, cannot find them: nine of them do no better than a coin. The drive can.**
+**[Heimdall](https://doi.org/10.1145/3689031.3717496), a learned controller, calls slow on 52% of an SSD's reads when 30% are slow. Uncertainty estimators, [the remedy prescribed](https://proceedings.mlsys.org/paper_files/paper/2026/hash/96aca14d6c4dcd3adf54bc2c5ad7f138-Abstract-Conference.html) for its wrong guesses, cannot find them: nine of them do no better than a coin. The drive can.**
 
-On one trace, 2% of the 4 KiB reads that found nothing outstanding on the drive came back slow, and Heimdall called 96% of them slow. A 4,096-entry table of how the drive's recent reads came back, untrained and 21 ns a decision, ranks the wrong guesses at a median AUROC of 0.68 on 57 held-out traces, where the nine sit at 0.46 to 0.52, and it predicts slow reads better than Heimdall itself.
+Above, every read of 57 held-out traces, one row a trace, red where Heimdall guessed wrong. A 4,096-entry table of how the drive's recent reads came back, untrained and 21 ns a decision, puts the wrong guesses first: a median AUROC of 0.68, where the nine sit at 0.46 to 0.52. And it predicts slow reads better than Heimdall itself.
 
-[Read the paper](paper/main.pdf) · [How the table works](#the-drive-already-knows) · [Check every number](#check-it) · [Cite](#cite)
+**[The paper](paper/main.pdf)** is three pages. This repository is its supplement: the code, every result file, and one script that recomputes every number.
 
-## The estimators flip a coin
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="figures/heldout-dark.svg">
-  <img src="figures/heldout-light.svg" width="100%" alt="AUROC for ranking Heimdall's wrong guesses on 57 held-out traces, one dot a trace. Every read: the table has median 0.68, one running count 0.60, and the nine uncertainty estimators 0.46 to 0.52. Reads admitted as fast: the table 0.61, one running count 0.50, the estimators 0.47 to 0.55.">
-</picture>
-
-Heimdall (EuroSys 2025) is a small neural network that guesses, before every read, whether an SSD will serve it fast or slow. Gohil et al. (MLSys 2026) add an uncertainty estimator that scores each guess, and at microsecond budgets they prescribe distance from the training data: "a distance-based estimator must be selected, as it is the only viable option". Whether distance picks out Heimdall's wrong guesses, they did not measure.
-
-None of nine does. Each dot is one held-out trace: Heimdall's own pipeline trains the network on the first minute, and every read of the next two is scored. A guess is wrong when the read comes back on the other side of the knee of the replay's read latencies. An estimator's score is the AUROC with which it ranks wrong guesses above right ones, in the worst of four windows, and a coin scores 0.5. The nine have medians of 0.46 to 0.52. On the median trace, where 42% of Heimdall's guesses are wrong, a guess that Euclidean distance flags is wrong only 4 points more often than a guess it passes.
-
-## The wrong guesses are a bias
-
-Doubt is the wrong thing to look for. Heimdall is biased: on the median trace 73% of its wrong guesses are slow calls on reads that come back fast. An estimator that asks how unfamiliar an input is, or how torn the network is, cannot see a bias. One number can: a single running count of how often reads come back slow, blind to the read in front of it, outranks all nine estimators (median 0.60).
-
-The bias is taught. Heimdall trains on period labels, which mark whole stretches of a trace slow: 53% of the scored reads, where 30% come back slow.
-
-None of this is a weak copy of Heimdall. Its artefact reports 81 to 90% accuracy on its twelve traces, and our reimplementation of its pipeline reproduces that to within 0.5 points. That test filters 5 to 18% of a trace's rows as noise, splits the rest at random into training and test halves, and describes each I/O by the three submitted before it, finished or not. Deployed, the network sees the last three I/Os that completed, and a future it was not trained on: on the same twelve traces it is then wrong on 29 to 43% of reads by its own period labels.
-
-## The drive already knows
-
-The table is a notebook the system keeps about its own drive. Every read falls into one of 4,096 situations: how big it is, how many bytes the drive already has outstanding, how long the oldest unfinished request has been waiting, and whether the drive has just been quiet. For each situation the notebook holds one number, q: how often reads in that situation have lately come back slow. When a read finishes, its situation's number moves one sixty-fourth of the way towards 1 if it was slow and towards 0 if it was not. If Heimdall says fast where reads have been coming back slow, that guess is suspect.
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="figures/table-dark.svg">
-  <img src="figures/table-light.svg" width="100%" alt="The table after three minutes of one held-out trace. For 4 KiB reads with nothing outstanding its entry is 0.05: 2% of them came back slow, and Heimdall called 96% of them slow. For 64 KiB reads behind 256 KiB after a quiet gap its entry is 0.98: 96% of them came back slow, and Heimdall called 58% of them fast.">
-</picture>
-
-That is the whole mechanism:
+## The table
 
 ```python
 # a read is submitted
@@ -50,46 +22,30 @@ q = table[cell]                                  # how often reads like this one
 table[cell] += ((latency > T) - table[cell]) / 64
 ```
 
-T is the knee of the first minute's read latencies, so the table needs no training and no label but each read's own latency. The table keeps learning from every completion. The network and the nine estimators are fitted to the first minute and then frozen. None of the machinery is new: processors have assigned confidence to branch predictions this way since 1996. The reference implementation is the 143 lines of [admission/tracker.py](admission/tracker.py).
+T is the knee of the first minute's read latencies, so the table needs no training and no label but each read's own latency. A fast guess is suspect in proportion to q, a slow guess to 1 - q. The reference implementation, used unchanged for every result, is the 143 lines of [admission/tracker.py](admission/tracker.py).
 
-- **It finds the wrong guesses.** Shaped on traces from Heimdall's artefact and frozen before the held-out traces were replayed, it ranks them at a median AUROC of 0.68 and beats the best of the nine, picked per trace with hindsight, on 50 of the 57 traces. The level is modest: 16 traces reach 0.80. And most of the lead is the bias: among reads Heimdall admits as fast the table scores 0.61 against 0.47 to 0.55, level with the best of the nine picked in hindsight.
-- **Under Heimdall's period labels it does not.** There the table is a coin (0.52) and the best of the nine reaches 0.62: the table learns what reads did, not what the labeller says. The two distances fail under both (0.47 and 0.51).
-- **It costs what distance costs.** 20.7 ns a decision on one core, against 18.8 ns for Euclidean distance and 1,735 ns for a fixed-point copy of Heimdall's inference, in 16 KiB.
-- **It predicts slow reads better than the network it checks.** Taken as the forecast that a read will be slow, q has a median AUROC of 0.63 against 0.55 for Heimdall's output, and is ahead on 47 of the 57 traces. The fault is not the architecture: trained on each read's own latency, with the inputs it sees when deployed, the same network draws level with the table.
-
-## The tail cannot referee
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="figures/tail-dark.svg">
-  <img src="figures/tail-light.svg" width="100%" alt="p99.9 read latency of six trace pairs on two identical NVMe drives, one line a pair, when the guesses to distrust are chosen by Euclidean distance, by Mahalanobis distance, by the table and by an oracle told which were wrong. Every line is close to flat.">
-</picture>
-
-The evidence offered for the estimators was a 56 to 57% cut in p99.9 latency, and the tail does not care who picks the reads. On two identical enterprise NVMe drives, with hedging on (a read still unanswered after a timeout gets a copy on the other drive), the better of the two distances leaves the p99.9 of every one of the artefact's six trace pairs within 9% of where the table leaves it, at the median round, and even an oracle, told which guesses were wrong in an earlier replay, gains at most 13% on whichever of them does best.
-
-Rebuilt from their description and run without hedging, the better of the two distances cuts Heimdall's p99.9 by 3 to 24% on these drives, pair by pair at the median round. We do not reproduce the reported cut and cannot say which difference of drives, traces or training accounts for the gap.
-
-And part of any cut needs no model. In the replay logs that Heimdall's artefact ships, its own hedging baseline, with no model, has the lower p99.9 on all six pairs, by 1.4 to 2.9 times, and Heimdall the lower mean on all six.
-
-## Check it
+## Check every number
 
 ```sh
 python check.py
 ```
 
-needs only Python 3.10 or later. It recomputes every number the paper and these pages quote from the per-window result files in [results/](results/), and fails if any of them has drifted.
+Python 3.10 or later, nothing to install, a few seconds. It recomputes every number in the paper, and every measurement the paper leaves out, from the per-trace result files in [results/](results/), and fails if one has drifted.
+
+## Your own traces
+
+A per-I/O latency log of four columns is all the pipeline needs: [METHOD.md](METHOD.md#run-it).
+
+## What is where
 
 | where | what |
 |---|---|
-| [paper/](paper/) | the paper: LaTeX source and PDF |
-| [docs/further.md](docs/further.md) | every measurement the paper has no room for, each in a sentence |
-| [docs/results.md](docs/results.md) | every trace and every drive measurement as tables, including those the table loses |
-| [docs/method.md](docs/method.md) | exactly how each was made, and [how to make them again](docs/reproduce.md) |
+| [METHOD.md](METHOD.md) | how each number was made, and what the paper has no room for |
+| [results/](results/) | the result files, per trace and per drive run, and [all of them as tables](results/tables.md) |
 | [admission/](admission/) | the table, Heimdall's pipeline reimplemented, the nine estimators, the simulator |
-| [scripts/](scripts/) | the analyses behind each section, and the one script every number comes from |
-| [results/](results/) | per-window results for every trace, every drive measurement, the values the two papers report |
-| [figures/](figures/) | every figure with the script that draws it |
+| [scripts/](scripts/) | the analyses that wrote the result files, and [summary.py](scripts/summary.py), which every number comes from |
 | [bench/](bench/) | the replayer, the quiet-machine recorder and the cost benchmark, in C |
-| [tests/](tests/) | the table on cases worked by hand, and the check failing on a changed result |
+| [paper/](paper/), [figures/](figures/), [tests/](tests/) | the paper's source, the script behind each figure, the table on cases worked by hand |
 
 ## Cite
 
@@ -101,17 +57,4 @@ needs only Python 3.10 or later. It recomputes every number the paper and these 
 }
 ```
 
-[CITATION.cff](CITATION.cff) carries the same.
-
-## Licence and credits
-
-Our code, results, figures and text are released under [CC0 1.0](LICENSE). What belongs to others, and what is deliberately not included, is in [NOTICE.md](NOTICE.md).
-
-- Kurniawan et al. [Heimdall: Optimizing Storage I/O Admission with Extensive Machine Learning Pipeline](https://doi.org/10.1145/3689031.3717496). EuroSys 2025.
-- Gohil et al. [When Machine Learning Isn't Sure: Building Resilient ML-Based Computer Systems by Embracing Uncertainty](https://proceedings.mlsys.org/paper_files/paper/2026/hash/96aca14d6c4dcd3adf54bc2c5ad7f138-Abstract-Conference.html). MLSys 2026.
-- Dean and Barroso. [The Tail at Scale](https://doi.org/10.1145/2408776.2408794). Communications of the ACM, 2013.
-- Jacobsen, Rotenberg and Smith. [Assigning Confidence to Conditional Branch Predictions](https://doi.org/10.1109/MICRO.1996.566457). MICRO 1996.
-- UMass Trace Repository. [Storage traces: Financial and WebSearch](https://traces.cs.umass.edu/docs/traces/storage/), from the Storage Performance Council, contributed by Ken Bates and Bruce McNutt.
-- Narayanan, Donnelly and Rowstron. [Write Off-Loading: Practical Power Management for Enterprise Storage](https://www.usenix.org/conference/fast-08/write-loading-practical-power-management-enterprise-storage). FAST 2008. The MSR Cambridge traces.
-- Luo et al. [The Power of Prediction: Microservice Auto Scaling via Workload Learning](https://doi.org/10.1145/3542929.3563477). SoCC 2022. Alibaba's 2022 microservice traces.
-- Phothilimthana et al. [Thesios: Synthesizing Accurate Counterfactual I/O Traces from I/O Samples](https://doi.org/10.1145/3620666.3651337). ASPLOS 2024. Google's Thesios traces, CC BY 4.0.
+Our code, results, figures and text are released under [CC0 1.0](LICENSE). What belongs to others is in [NOTICE.md](NOTICE.md).

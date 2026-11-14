@@ -32,8 +32,8 @@ STORM = (16, 7, 1)                    # 64 KiB, 256 KiB or more outstanding, aft
 X0, X1, Y0, W, H = 0.468, 0.728, 0.2, 0.235, 0.66       # the two heat maps, in figure coordinates
 
 
-def draw(theme):
-    t = style.use(theme)
+def draw():
+    t = style.use()
     d = S.load(S.RES / "heldout" / "table" / f"{TRACE}.json")
     cells = {(c["size_class"], c["load_class"], c["quiet"]): c for c in d["cells"] if c["age_class"] == 0}
     cmap = LinearSegmentedColormap.from_list("q", [t["bg"], t["outcome"]])
@@ -117,10 +117,9 @@ def draw(theme):
     say(0.305, "A read completes: update its cell", fontweight="bold", fontsize=8.5)
     say(0.205, "Slower than T: 1/64 of the way to 1.")
     say(0.135, "Faster: 1/64 of the way to 0.")
-    style.save(fig, "table", theme, t)
+    style.save(fig, "table")
     plt.close(fig)
 
 
 if __name__ == "__main__":
-    for theme in ("paper", "light", "dark"):
-        draw(theme)
+    draw()

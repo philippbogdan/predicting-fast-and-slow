@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""The picture at the top of the README, in two versions (results/heldout/hero, from scripts/hero_data.py).
+"""The picture at the top of the README (results/heldout/hero, from scripts/hero_data.py), light and dark.
 
 strips  Every later read of all 57 held-out traces, one row a trace.  Each row is the trace's reads put
-        in order, most suspect first, and cut into 240 equal runs; a run is lit by the share of
+        in order, most suspect first, and cut into 240 equal runs.  A run is red by the share of
         Heimdall's guesses in it that were wrong.  Left: ordered by the table.  Right: ordered by
-        Euclidean distance from the training data.  A signal that knows which guess is wrong lights the
-        left end of its rows and leaves the right end dark.
-rain    Two minutes of one drive: every later read of one held-out trace by submission time and latency.
-        Left: lit where the table said slow.  Right: lit where the Euclidean gate flagged the read.
-        Reads above the line came back slow.
+        Euclidean distance from the training data.  A signal that knows which guess is wrong reddens the
+        left end of its rows and leaves the right end pale.
+rain    A second picture, drawn only when asked for.  Two minutes of one drive: every later read of one
+        held-out trace by submission time and latency.  Left: red where the table said slow.  Right: red
+        where the Euclidean gate flagged the read.  Reads above the line came back slow.
 
-Usage: hero.py [strips|rain]   (both by default; light and dark)
+Usage: hero.py [strips] [rain]   (strips by default)
 """
 import sys
 from pathlib import Path
@@ -139,7 +139,7 @@ def rain(theme):
 
 
 if __name__ == "__main__":
-    which = sys.argv[1:] or ["strips", "rain"]
+    which = sys.argv[1:] or ["strips"]
     for theme in ("light", "dark"):
         for w in which:
             {"strips": strips, "rain": rain}[w](theme)

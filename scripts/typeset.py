@@ -220,14 +220,40 @@ def macros(s):
     }
 
 
+def retraining_macros(s):
+    """METHOD.md's paragraph on Heimdall retrained during the replay (results/retraining), which the paper does
+    not quote. The ranges run over the four schedules."""
+    r = s["retraining"]
+    s7, slide = r["arms"]["heimdall_s7"], r["arms"]["slide10"]
+    times = slide["schedule"]["specs"][0]["times"]
+    # the four medians straddle 17.5 points, so whole points would split them into "17 to 18"
+    gap = [f"{100 * x:.1f}" for x in r["calls_minus_reads_median_range"]]
+    return {
+        "RetrainTraces": r["traces"], "RetrainFired": s7["schedule"]["traces_refitted"],
+        "RetrainBelow": pct(r["heimdall_trigger_below"]), "RetrainOthers": WORDS[len(r["arms"]) - 1],
+        "RetrainEvery": f"{min(b - a for a, b in zip(times, times[1:])):.0f}",
+        "RetrainTableLo": f2(r["pooled_table_median_range"][0]), "RetrainTableHi": f2(r["pooled_table_median_range"][1]),
+        "RetrainAheadLo": r["pooled_table_ahead_range"][0], "RetrainAheadHi": r["pooled_table_ahead_range"][1],
+        "RetrainCallsAbove": tail(gap),
+        # with the guess fixed the two medians differ in the third decimal, so they are given to three
+        "RetrainFastTableLo": f"{r['called_fast_table_median_range'][0]:.3f}",
+        "RetrainFastTableHi": f"{r['called_fast_table_median_range'][1]:.3f}",
+        "RetrainFastBestLo": f"{r['called_fast_best_of_nine_median_range'][0]:.3f}",
+        "RetrainFastBestHi": f"{r['called_fast_best_of_nine_median_range'][1]:.3f}",
+    }
+
+
 def page_macros(s):
-    """The pages' numbers: the paper's, and those of METHOD.md's plates (scripts/plate_data.py)."""
+    """The pages' numbers: the paper's, those of METHOD.md's plates (scripts/plate_data.py) and those of its
+    paragraph on retraining."""
     import plate_data
     m = macros(s)
     plates = plate_data.macros(s)
-    if set(m) & set(plates):
-        raise RuntimeError(f"named twice: {sorted(set(m) & set(plates))}")
-    return {**m, **plates}
+    retrain = retraining_macros(s)
+    twice = (set(m) & set(plates)) | (set(m) & set(retrain)) | (set(plates) & set(retrain))
+    if twice:
+        raise RuntimeError(f"named twice: {sorted(twice)}")
+    return {**m, **plates, **retrain}
 
 
 def tex(m):

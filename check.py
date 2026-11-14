@@ -171,6 +171,52 @@ def statements(s):
          q["with_timeout_p999_range"][1] < 0.3 and q["gates_without_timeout_p999_range_P2_P5"][0] > 0.9),
         ("in Figure 10 of Gohil et al., as we read it, hedging and the estimators meet at p99.99",
          abs(fig10["p9999_ms"]["hedging"] - fig10["p9999_ms"]["heimdall_plus_euclidean"]) <= 0.1),
+    ] + retraining_statements(s)
+
+
+def retraining_statements(s):
+    """What METHOD.md's paragraph on retraining says in words, each as a test on the recomputed summary."""
+    h, cf, r = s["heldout"], s["classwise"]["heldout"]["called_fast"], s["retraining"]
+    a = r["arms"]
+    s7, s7s = a["heimdall_s7"], a["heimdall_s7"]["schedule"]
+    every10 = [float(t) for t in range(70, 180, 10)]
+    spec = {arm: x["schedule"]["specs"] for arm, x in a.items()}
+    return [
+        ("retraining: every schedule holds the held-out traces, each the replay results/heldout/traces.json "
+         "records, and scores the paper's reads in every window, with the same reads slow",
+         r["traces"] == r["traces_in_every_arm"] == r["replays_as_recorded"] == r["windows_as_scored"] == h["traces"]
+         and all(x["traces"] == h["traces"] for x in a.values())),
+        ("retraining: the four schedules are Heimdall's check at 120 s, a refit at 120 s, and a refit every 10 s "
+         "from 70 s on the last minute or on everything since the start, each refit fitting the network and the "
+         "nine estimators afresh",
+         sorted(a) == ["grow10", "heimdall_s7", "minute", "slide10"]
+         and all(len(v) == 1 and v[0]["refit"] == "all" and v[0]["first"] == "fresh" for v in spec.values())
+         and spec["heimdall_s7"][0]["times"] == spec["minute"][0]["times"] == [120.0]
+         and spec["heimdall_s7"][0]["trigger"] and not spec["minute"][0]["trigger"]
+         and s7s["stretches_s"] == a["minute"]["schedule"]["stretches_s"] == [[60.0, 120.0]]
+         and spec["slide10"][0]["times"] == spec["grow10"][0]["times"] == every10
+         and a["slide10"]["schedule"]["stretches_s"] == [[t - 60, t] for t in every10]
+         and a["grow10"]["schedule"]["stretches_s"] == [[0.0, t] for t in every10]
+         and a["minute"]["schedule"]["traces_refitted"] == h["traces"]),
+        ("retraining: Heimdall's check is run once on every trace and refits exactly where the accuracy over the "
+         "last minute is below 80%",
+         s7s["checked"] == s7s["scheduled"] == h["traces"] and s7s["refitted_when_checked"] == s7s["refits"]
+         == s7s["traces_refitted"]
+         and s7s["accuracy_refitted_max"] < r["heimdall_trigger_below"] <= s7s["accuracy_kept_min"]),
+        ("retraining: where Heimdall's check fires nothing moves: the table's median and its lead over the best "
+         "of the nine, over every read and among reads called fast, are the paper's frozen ones at two decimals",
+         0 < s7s["traces_refitted"] < h["traces"]
+         and f"{s7['pooled']['table_median']:.2f}" == f"{h['table_median']:.2f}"
+         and s7["pooled"]["table_ahead"] == h["table_ahead"]
+         and f"{s7['called_fast']['table_median']:.2f}" == f"{cf['table_median']:.2f}"
+         and f"{s7['called_fast']['best_of_nine_median']:.2f}" == f"{cf['best_of_nine_median']:.2f}"),
+        ("retraining: on every schedule the table is ahead of the best of the nine on most traces, and Heimdall "
+         "calls slow more often than reads come back slow on most traces",
+         r["pooled_table_ahead_range"][0] > h["traces"] / 2 and r["calls_minus_reads_median_range"][0] > 0
+         and all(x["calls_slow_more_often_than_reads_are"] > h["traces"] / 2 for x in a.values())),
+        ("retraining: among reads called fast the tie stays a tie, the table's lead over the best of the nine "
+         "within 0.02 of none on the median trace on every schedule, as frozen",
+         max(abs(v) for v in r["called_fast_lead_median_range"]) < 0.02 and abs(cf["lead_median"]) < 0.02),
     ]
 
 
@@ -245,6 +291,10 @@ def check():
           f"ahead of the best of nine on {c['called_fast']['table_ahead']} of {c['called_fast']['traces']}")
     print(f"the table's entry against Heimdall's output as a forecast of slow reads: ahead on "
           f"{d['heimdall']['table_ahead']} of {d['heimdall']['traces']}")
+    r = fresh["retraining"]
+    print(f"Heimdall retrained during the replay, four schedules: the table {r['pooled_table_median_range'][0]:.2f} "
+          f"to {r['pooled_table_median_range'][1]:.2f}, ahead of the best of nine on "
+          f"{r['pooled_table_ahead_range'][0]} to {r['pooled_table_ahead_range'][1]} of {r['traces']}")
     print()
     en = fresh["enterprise_nvme"]
     print(f"identical drives: {en['kept_runs']} kept runs ({en['shared_runs']} shared, {en['missing_runs']} missing "

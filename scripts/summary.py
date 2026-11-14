@@ -660,13 +660,92 @@ def other_decisions():
     return out
 
 
+# ------------------------------------------------------------------------------------------------
+# 6. Heimdall retrained during the replay (results/retraining, scripts/retraining)
+# ------------------------------------------------------------------------------------------------
+RETRAINED = ("heimdall_s7", "minute", "slide10", "grow10")
+HEIMDALL_TRIGGER = 0.80      # Heimdall's Section 7: it retrains when the model's accuracy drops below 80%
+
+
+def retrained_block(recs):
+    """One schedule on the held-out traces: the paper's statistics, each trace scored in its worst later window."""
+    names = sorted(recs)
+
+    def w(n, k, part):
+        v = [x["signals"][k][part] for x in later(recs[n])]
+        v = [a for a in v if finite(a)]
+        return min(v) if v else float("nan")
+
+    def share(n, key):
+        W = later(recs[n])
+        return sum(x[key] for x in W) / sum(x["n"] for x in W)
+
+    out = {"traces": len(names)}
+    for part in ("pooled", "called_fast", "called_slow"):
+        have = [n for n in names if all(finite(w(n, k, part)) for k in ["tracker"] + NINE)]
+        table = [w(n, "tracker", part) for n in have]
+        best = [max(w(n, k, part) for k in NINE) for n in have]
+        out[part] = {"traces": len(have), "table_median": st.median(table), "best_of_nine_median": st.median(best),
+                     "table_ahead": sum(t > b for t, b in zip(table, best)),
+                     "lead_median": st.median(t - b for t, b in zip(table, best)),
+                     "estimator_medians_range": rng(st.median(w(n, k, part) for n in have) for k in NINE)}
+    out["heimdall_wrong_median"] = st.median(share(n, "wrong") for n in names)
+    out["heimdall_calls_slow_median"] = st.median(share(n, "called_slow") for n in names)
+    out["reads_slow_median"] = st.median(share(n, "slow") for n in names)
+    out["calls_minus_reads_median"] = st.median(share(n, "called_slow") - share(n, "slow") for n in names)
+    out["calls_slow_more_often_than_reads_are"] = sum(share(n, "called_slow") > share(n, "slow") for n in names)
+    # the schedule as run
+    segs = {n: recs[n]["segments"][1:] for n in names}
+    out["schedule"] = {
+        "specs": [json.loads(x) for x in sorted({json.dumps(recs[n]["spec"], sort_keys=True) for n in names})],
+        "stretches_s": sorted({tuple(s["stretch"]) for n in names for s in segs[n]}),
+        "traces_refitted": sum(any(s["retrained"] for s in segs[n]) for n in names),
+        "refits": sum(s["retrained"] for n in names for s in segs[n]),
+        "scheduled": sum(len(segs[n]) for n in names)}
+    checked = [s for n in names for s in segs[n] if "accuracy_last_minute" in s]
+    if checked:
+        out["schedule"]["checked"] = len(checked)
+        out["schedule"]["refitted_when_checked"] = sum(s["retrained"] for s in checked)
+        out["schedule"]["accuracy_refitted_max"] = max(
+            (s["accuracy_last_minute"] for s in checked if s["retrained"]), default=None)
+        out["schedule"]["accuracy_kept_min"] = min(
+            (s["accuracy_last_minute"] for s in checked if not s["retrained"]), default=None)
+    return out
+
+
+def retraining():
+    """Heimdall's network and the nine estimators refitted during the replay, on four schedules."""
+    traces = {t["name"]: t for t in load(RES / "heldout" / "traces.json")["traces"]}
+    paper = classwise_records("heldout")
+    arms = {a: {p.stem: load(p) for p in sorted((RES / "retraining" / a).glob("*.json"))} for a in RETRAINED}
+    out = {"arms": {a: retrained_block(r) for a, r in arms.items()}, "heimdall_trigger_below": HEIMDALL_TRIGGER}
+    names = sorted(set().union(*arms.values()))
+    out["traces"] = len(names)
+    out["traces_in_every_arm"] = sum(all(n in r for r in arms.values()) for n in names)
+    # the replays are the paper's, and every window scores the paper's reads under the paper's truth
+    out["replays_as_recorded"] = sum(
+        all(r[n]["replay_sha256"] == traces[n]["replay_sha256"] for r in arms.values()) for n in names)
+    out["windows_as_scored"] = sum(
+        all([(x["n"], x["slow"]) for x in later(r[n])]
+            == [(x["n"], x["own_latency"]["slow"]) for x in later(paper[n])] for r in arms.values())
+        for n in names)
+    b = out["arms"].values()
+    out["pooled_table_median_range"] = rng(x["pooled"]["table_median"] for x in b)
+    out["pooled_table_ahead_range"] = rng(x["pooled"]["table_ahead"] for x in b)
+    out["calls_minus_reads_median_range"] = rng(x["calls_minus_reads_median"] for x in b)
+    out["called_fast_table_median_range"] = rng(x["called_fast"]["table_median"] for x in b)
+    out["called_fast_best_of_nine_median_range"] = rng(x["called_fast"]["best_of_nine_median"] for x in b)
+    out["called_fast_lead_median_range"] = rng(x["called_fast"]["lead_median"] for x in b)
+    return out
+
+
 def build():
     return {"heldout": heldout(), "development": development(), "example_table": example_table(), "cost": cost(),
             "classwise": classwise(),
             "direct": direct(), "artefact_replays": artefact_replays(), "enterprise_nvme": enterprise_nvme(),
             "quiet_drives": quiet_drives(), "identical_nvme": identical_nvme(), "simulated": simulated(),
             "other_decisions": other_decisions(), "study_reported": load(RES / "study_reported.json"),
-            "heimdall_reported": load(RES / "heimdall_reported.json")}
+            "heimdall_reported": load(RES / "heimdall_reported.json"), "retraining": retraining()}
 
 
 def main():

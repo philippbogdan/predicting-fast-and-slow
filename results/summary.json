@@ -9233,5 +9233,394 @@
    "section_7_setting": "accuracy within 10-minute windows of an 8-hour trace, after one training session on its first 1, 5 or 15 minutes",
    "section_6_1_on_hedging": "while hedging delivers shorter tail latencies above p99, its average latency is far worse than Heimdall"
   }
+ },
+ "retraining": {
+  "arms": {
+   "heimdall_s7": {
+    "traces": 57,
+    "pooled": {
+     "traces": 57,
+     "table_median": 0.6844088177134702,
+     "best_of_nine_median": 0.5542395517197312,
+     "table_ahead": 50,
+     "lead_median": 0.12088577247037935,
+     "estimator_medians_range": [
+      0.4535222339342183,
+      0.519201688303484
+     ]
+    },
+    "called_fast": {
+     "traces": 57,
+     "table_median": 0.6070899209486166,
+     "best_of_nine_median": 0.5977941176470588,
+     "table_ahead": 29,
+     "lead_median": 0.0021399455528825495,
+     "estimator_medians_range": [
+      0.4697601668404588,
+      0.5412575366063738
+     ]
+    },
+    "called_slow": {
+     "traces": 56,
+     "table_median": 0.6249439293787082,
+     "best_of_nine_median": 0.5168385741894641,
+     "table_ahead": 34,
+     "lead_median": 0.06690104354013493,
+     "estimator_medians_range": [
+      0.4436102934505296,
+      0.48869489266763644
+     ]
+    },
+    "heimdall_wrong_median": 0.43108765677472416,
+    "heimdall_calls_slow_median": 0.4947692307692308,
+    "reads_slow_median": 0.29642772651999055,
+    "calls_minus_reads_median": 0.17492816091954025,
+    "calls_slow_more_often_than_reads_are": 43,
+    "schedule": {
+     "specs": [
+      {
+       "first": "fresh",
+       "refit": "all",
+       "stretch": "last60",
+       "times": [
+        120.0
+       ],
+       "trigger": true
+      }
+     ],
+     "stretches_s": [
+      [
+       60.0,
+       120.0
+      ]
+     ],
+     "traces_refitted": 41,
+     "refits": 41,
+     "scheduled": 57,
+     "checked": 57,
+     "refitted_when_checked": 41,
+     "accuracy_refitted_max": 0.7939554212315829,
+     "accuracy_kept_min": 0.8058140754592772
+    }
+   },
+   "minute": {
+    "traces": 57,
+    "pooled": {
+     "traces": 57,
+     "table_median": 0.6843736230248771,
+     "best_of_nine_median": 0.5550277241834837,
+     "table_ahead": 51,
+     "lead_median": 0.11866169716709507,
+     "estimator_medians_range": [
+      0.4518154966067349,
+      0.5175040723956977
+     ]
+    },
+    "called_fast": {
+     "traces": 57,
+     "table_median": 0.6070899209486166,
+     "best_of_nine_median": 0.585947694500795,
+     "table_ahead": 30,
+     "lead_median": 0.008215765780860695,
+     "estimator_medians_range": [
+      0.4683952312589726,
+      0.5317796823669307
+     ]
+    },
+    "called_slow": {
+     "traces": 56,
+     "table_median": 0.6249439293787082,
+     "best_of_nine_median": 0.5168385741894641,
+     "table_ahead": 36,
+     "lead_median": 0.06731262616575082,
+     "estimator_medians_range": [
+      0.4397332233223322,
+      0.4887919765482104
+     ]
+    },
+    "heimdall_wrong_median": 0.431353919239905,
+    "heimdall_calls_slow_median": 0.4947692307692308,
+    "reads_slow_median": 0.29642772651999055,
+    "calls_minus_reads_median": 0.17492816091954025,
+    "calls_slow_more_often_than_reads_are": 43,
+    "schedule": {
+     "specs": [
+      {
+       "first": "fresh",
+       "refit": "all",
+       "stretch": "last60",
+       "times": [
+        120.0
+       ],
+       "trigger": false
+      }
+     ],
+     "stretches_s": [
+      [
+       60.0,
+       120.0
+      ]
+     ],
+     "traces_refitted": 57,
+     "refits": 57,
+     "scheduled": 57
+    }
+   },
+   "slide10": {
+    "traces": 57,
+    "pooled": {
+     "traces": 57,
+     "table_median": 0.6860270191280413,
+     "best_of_nine_median": 0.5486410968138543,
+     "table_ahead": 52,
+     "lead_median": 0.14521342183056996,
+     "estimator_medians_range": [
+      0.4426407780328438,
+      0.5105258860217614
+     ]
+    },
+    "called_fast": {
+     "traces": 57,
+     "table_median": 0.6089644105813661,
+     "best_of_nine_median": 0.5912714608896624,
+     "table_ahead": 25,
+     "lead_median": -0.018023009853995742,
+     "estimator_medians_range": [
+      0.4754164442980912,
+      0.5281762375512212
+     ]
+    },
+    "called_slow": {
+     "traces": 56,
+     "table_median": 0.6209446574968909,
+     "best_of_nine_median": 0.5160798799496931,
+     "table_ahead": 37,
+     "lead_median": 0.057125710914891215,
+     "estimator_medians_range": [
+      0.43184308784115233,
+      0.48973369456664817
+     ]
+    },
+    "heimdall_wrong_median": 0.42682521756460506,
+    "heimdall_calls_slow_median": 0.5332693538067819,
+    "reads_slow_median": 0.29642772651999055,
+    "calls_minus_reads_median": 0.17520847361060754,
+    "calls_slow_more_often_than_reads_are": 43,
+    "schedule": {
+     "specs": [
+      {
+       "first": "fresh",
+       "refit": "all",
+       "stretch": "last60",
+       "times": [
+        70.0,
+        80.0,
+        90.0,
+        100.0,
+        110.0,
+        120.0,
+        130.0,
+        140.0,
+        150.0,
+        160.0,
+        170.0
+       ],
+       "trigger": false
+      }
+     ],
+     "stretches_s": [
+      [
+       10.0,
+       70.0
+      ],
+      [
+       20.0,
+       80.0
+      ],
+      [
+       30.0,
+       90.0
+      ],
+      [
+       40.0,
+       100.0
+      ],
+      [
+       50.0,
+       110.0
+      ],
+      [
+       60.0,
+       120.0
+      ],
+      [
+       70.0,
+       130.0
+      ],
+      [
+       80.0,
+       140.0
+      ],
+      [
+       90.0,
+       150.0
+      ],
+      [
+       100.0,
+       160.0
+      ],
+      [
+       110.0,
+       170.0
+      ]
+     ],
+     "traces_refitted": 57,
+     "refits": 626,
+     "scheduled": 627
+    }
+   },
+   "grow10": {
+    "traces": 57,
+    "pooled": {
+     "traces": 57,
+     "table_median": 0.6888179534644181,
+     "best_of_nine_median": 0.5503887724391597,
+     "table_ahead": 51,
+     "lead_median": 0.13535728646781942,
+     "estimator_medians_range": [
+      0.4545366748756579,
+      0.5182608695652174
+     ]
+    },
+    "called_fast": {
+     "traces": 57,
+     "table_median": 0.6076955518618671,
+     "best_of_nine_median": 0.5947680540071845,
+     "table_ahead": 24,
+     "lead_median": -0.012881051268504584,
+     "estimator_medians_range": [
+      0.47477193377632615,
+      0.5607536002723195
+     ]
+    },
+    "called_slow": {
+     "traces": 56,
+     "table_median": 0.6197385230624468,
+     "best_of_nine_median": 0.5218150127146595,
+     "table_ahead": 35,
+     "lead_median": 0.04360518047155154,
+     "estimator_medians_range": [
+      0.4309705279131734,
+      0.4894121136885977
+     ]
+    },
+    "heimdall_wrong_median": 0.42027920646583394,
+    "heimdall_calls_slow_median": 0.5015873015873016,
+    "reads_slow_median": 0.29642772651999055,
+    "calls_minus_reads_median": 0.17527219290628548,
+    "calls_slow_more_often_than_reads_are": 44,
+    "schedule": {
+     "specs": [
+      {
+       "first": "fresh",
+       "refit": "all",
+       "stretch": "all",
+       "times": [
+        70.0,
+        80.0,
+        90.0,
+        100.0,
+        110.0,
+        120.0,
+        130.0,
+        140.0,
+        150.0,
+        160.0,
+        170.0
+       ],
+       "trigger": false
+      }
+     ],
+     "stretches_s": [
+      [
+       0.0,
+       70.0
+      ],
+      [
+       0.0,
+       80.0
+      ],
+      [
+       0.0,
+       90.0
+      ],
+      [
+       0.0,
+       100.0
+      ],
+      [
+       0.0,
+       110.0
+      ],
+      [
+       0.0,
+       120.0
+      ],
+      [
+       0.0,
+       130.0
+      ],
+      [
+       0.0,
+       140.0
+      ],
+      [
+       0.0,
+       150.0
+      ],
+      [
+       0.0,
+       160.0
+      ],
+      [
+       0.0,
+       170.0
+      ]
+     ],
+     "traces_refitted": 57,
+     "refits": 627,
+     "scheduled": 627
+    }
+   }
+  },
+  "heimdall_trigger_below": 0.8,
+  "traces": 57,
+  "traces_in_every_arm": 57,
+  "replays_as_recorded": 57,
+  "windows_as_scored": 57,
+  "pooled_table_median_range": [
+   0.6843736230248771,
+   0.6888179534644181
+  ],
+  "pooled_table_ahead_range": [
+   50,
+   52
+  ],
+  "calls_minus_reads_median_range": [
+   0.17492816091954025,
+   0.17527219290628548
+  ],
+  "called_fast_table_median_range": [
+   0.6070899209486166,
+   0.6089644105813661
+  ],
+  "called_fast_best_of_nine_median_range": [
+   0.585947694500795,
+   0.5977941176470588
+  ],
+  "called_fast_lead_median_range": [
+   -0.018023009853995742,
+   0.008215765780860695
+  ]
  }
 }

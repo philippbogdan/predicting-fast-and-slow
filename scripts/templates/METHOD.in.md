@@ -27,7 +27,7 @@ How each number in the paper was made, what the paper has no room for, and how t
   <img src="figures/plates/bias-light.svg" width="570" alt="One thin line for each of the {{HeldTraces}} held-out traces through three columns, the share of its scored reads that came back slow, that Heimdall called slow and that its labels marked slow, on an axis from 0 to 100%. A heavy red line joins the medians, lettered {{ReadsSlow}}%, {{CallsSlow}}% and {{PeriodSlow}}%: it rises from the first column to the second and stays nearly level to the third.">
 </picture>
 
-**Fig. 3.** Heimdall's calls follow what it was taught, not what the reads did. On the median held-out trace {{ReadsSlow}}% of the scored reads came back slow, Heimdall called {{CallsSlow}}% slow, and its period labels marked {{PeriodSlow}}% slow. It calls slow more often than reads come back slow on {{BiasAbove}} of the {{HeldTraces}} traces, by a median {{BiasGapReads}} points, and stays within a median {{BiasGapLabels}} points of its labels.
+**Fig. 3.** Heimdall's calls follow what it was taught, not what the reads did. On the median held-out trace {{ReadsSlow}}% of the scored reads came back slow, Heimdall called {{CallsSlow}}% slow, and its period labels marked {{PeriodSlow}}% slow. It calls slow more often than reads come back slow on {{BiasAbove}} of the {{HeldTraces}} traces. Over all of them its calls sit a median {{BiasGapReads}} points above the reads and within a median {{BiasGapLabels}} points of its labels.
 
 **The score.** A read is slow when its latency exceeds the knee of the replay's read-latency distribution, found by the tangent method of LinnOS and Heimdall, and a guess is wrong when it disagrees. Each estimator, and the table, gives every guess a number, higher for more suspect. Its score on a trace is the AUROC with which it ranks wrong guesses above right ones, in the worst of the four later windows. A window with one class only is left out. The best of nine is picked per trace after the fact, which favours the estimators. Heimdall's period labels are scored beside each read's latency everywhere.
 
@@ -123,7 +123,7 @@ It was shaped on the artefact's twelve device traces and the five further replay
 
 **Every number.** `python check.py` fails if a result file, the summary, the paper's numbers, either page or the tables have drifted, and [tests/test_check.py](tests/test_check.py) shows it failing on a changed result.
 
-**The figures and the paper.** Each figure script reads [results/](results/) and writes into `paper/figures/`. The paper takes its numbers from `paper/numbers.tex`, which [scripts/typeset.py](scripts/typeset.py) writes.
+**The figures and the paper.** Each figure script reads [results/](results/) and writes into `paper/figures/`, and [figures/table.py](figures/table.py) also writes the two versions of Fig. 4 beside itself. The paper takes its numbers from `paper/numbers.tex`, which [scripts/typeset.py](scripts/typeset.py) writes.
 
 ```sh
 pip install numpy matplotlib

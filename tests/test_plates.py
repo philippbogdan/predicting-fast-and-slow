@@ -30,6 +30,12 @@ def test_the_table_figure_redraws_byte_for_byte():
     """Fig. 4 is the paper's Figure 2, figures/table.py's light and dark versions."""
     sys.path.insert(0, str(ROOT / "figures"))
     import matplotlib.pyplot as plt
+    import pytest
+    from matplotlib import font_manager
+    try:
+        font_manager.findfont("Charter", fallback_to_default=False)
+    except ValueError:
+        pytest.skip("the figure is set in Charter, which this machine does not have")
     import style
     import table
     for theme in ("light", "dark"):

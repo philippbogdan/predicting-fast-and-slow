@@ -8,7 +8,7 @@ Every number the paper quotes is computed from these files by [scripts/summary.p
 | [heldout/detection/](heldout/detection) | per trace and window, the AUROC of 39 scores for Heimdall's wrong guesses, under both truths (`signals_G2_request`: each read's own latency, `signals`: Heimdall's period labels), with error rates and counts |
 | [heldout/table/](heldout/table) | the table one trace taught: every visited cell's entry, reads, slow reads and Heimdall's calls |
 | [heldout/hero/](heldout/hero) | binned counts behind the picture at the top of the README |
-| [heldout/frozen.sha256](heldout/frozen.sha256) | the pipeline as frozen before the held-out traces were replayed |
+| [heldout/frozen.sha256](heldout/frozen.sha256) | the checksums of the pipeline the held-out traces were scored with |
 | [development/detection/](development/detection) | the same per-window scores for the artefact's twelve device traces and five further replays |
 | [development/pipeline/](development/pipeline) | the reimplemented labelling, features and accuracy against the artefact's own files |
 | [classwise/](classwise) | the same ranking with the guess held fixed, with its controls, per window ([scripts/classwise.py](../scripts/classwise.py)) |

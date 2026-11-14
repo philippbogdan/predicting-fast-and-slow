@@ -9,8 +9,8 @@
                              recomputes them from results/.
      scripts/tables.py       results/tables.md is the tables of results/.
   4. results/heldout/frozen.sha256
-                             admission/ is byte for byte the pipeline that was frozen before the
-                             held-out traces were replayed.
+                             admission/ is byte for byte the pipeline whose checksums that file
+                             records, the one the held-out traces were scored with.
   5. The statements the paper, the pages and the plates' captions make in words (all six pairs, all twelve
      traces, level with, ...) hold in the recomputed numbers.
 
@@ -272,7 +272,7 @@ def check():
     # 4. the pipeline is the frozen one
     bad = [line.split("  ", 1)[1] for line in FROZEN.read_text().splitlines()
            if sha256(ROOT / line.split("  ", 1)[1]) != line.split("  ", 1)[0]]
-    report(not bad, "admission/ is the pipeline frozen before the held-out replays", bad)
+    report(not bad, "admission/ is the frozen pipeline, byte for byte", bad)
 
     # 5. what the paper and the pages say in words rather than numbers
     for said, holds in statements(fresh) + module("plate_data").statements(fresh):

@@ -9,7 +9,7 @@
 
 Above, every read of 57 held-out traces, one row a trace, red where Heimdall guessed wrong. A 4,096-entry table of how the drive's recent reads came back, untrained and 21 ns a decision, puts the wrong guesses first: a median AUROC of 0.68, where the nine sit at 0.46 to 0.52. And it predicts slow reads better than Heimdall itself.
 
-**[The paper](paper/main.pdf)** is three pages. This repository is its supplement: the code, every result file, and one script that recomputes every number.
+**[The paper](https://arxiv.org/abs/2611.19457)** is three pages ([PDF](paper/main.pdf)). This repository is its supplement: the code, every result file, and one script that recomputes every number.
 
 ## Why doubt cannot find them
 
@@ -80,7 +80,10 @@ A per-I/O latency log of four columns is all the pipeline needs: [METHOD.md](MET
 @misc{bogdan2026predicting,
   author = {Philipp Bogdan},
   title  = {Predicting, Fast and Slow: {SSD} Already Knows Which Guess Is Wrong},
-  year   = {2026}
+  year   = {2026},
+  eprint = {2611.19457},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.OS}
 }
 ```
 
